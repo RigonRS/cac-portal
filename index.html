@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal do Cliente — CAC Gestão</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="favicon.png" type="image/png" />
+</head>
+<body>
+
+<div class="login-wrapper">
+  <div class="login-card">
+
+    <div class="login-logo">
+      <img src="logo-fox.png" alt="Logo" onerror="this.style.display='none'" />
+      <div class="escritorio">Escritório CAC</div>
+    </div>
+
+    <h1>Área do Cliente</h1>
+    <p class="subtitle">Acesse seus documentos e acompanhe seus processos</p>
+
+    <form id="form-login" autocomplete="off">
+      <div class="form-group">
+        <label for="input-cpf">CPF</label>
+        <input
+          id="input-cpf"
+          type="text"
+          inputmode="numeric"
+          placeholder="000.000.000-00"
+          maxlength="14"
+          autocomplete="off"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="input-nasc">Data de Nascimento</label>
+        <input
+          id="input-nasc"
+          type="date"
+          required
+        />
+      </div>
+
+      <button type="submit" class="btn-primary" id="btn-entrar">
+        <span class="spinner" id="spinner"></span>
+        <span id="btn-texto">Entrar</span>
+      </button>
+
+      <div class="error-msg" id="erro"></div>
+    </form>
+
+  </div>
+</div>
+
+<script>
+  // ---- CONFIGURAÇÃO ----
+  // Substitua pela URL do seu Cloudflare Worker após o deploy
+  const WORKER_URL = 'https://cac-portal.SEU-USUARIO.workers.dev';
+
+  // ---- FORMATAÇÃO CPF ----
+  function fmtCPF(v) {
+    const d = v.replace(/\D/g, '').slice(0, 11);
+    return d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
+            .replace(/(\d{3})(\d{3})(\d{3})$/, '$1.$2.$3')
+            .replace(/(\d{3})(\d{3})$/, '$1.$2')
+            .replace(/(\d{3})$/, '$1');
+  }
+
+  document.getElementById('input-cpf').addEventListener('input', function() {
+    const pos = this.selectionStart;
+    this.value = fmtCPF(this.value);
+  });
+
+  // ---- LOGIN ----
+  document.getElementById('form-login').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const cpf  = document.getElementById('input-cpf').value.trim();
+    const nasc = document.getElementById('input-nasc').value;
+    const erro = document.getElementById('erro');
+    const btn  = document.getElementById('btn-entrar');
+    const spin = document.getElementById('spinner');
+    const txt  = document.getElementById('btn-texto');
+
+    erro.classList.remove('show');
+    btn.disabled = true;
+    spin.classList.add('show');
+    txt.textContent = 'Verificando...';
+
+    try {
+      const res = await fetch(WORKER_URL + '/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cpf, dataNascimento: nasc }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        erro.textContent = data.error || 'Erro ao fazer login. Tente novamente.';
+        erro.classList.add('show');
+        return;
+      }
+
+      sessionStorage.setItem('cac_token', data.token);
+      sessionStorage.setItem('cac_nome',  data.nome);
+      window.location.href = 'portal.html';
+
+    } catch (err) {
+      erro.textContent = 'Não foi possível conectar ao servidor. Tente novamente em instantes.';
+      erro.classList.add('show');
+    } finally {
+      btn.disabled = false;
+      spin.classList.remove('show');
+      txt.textContent = 'Entrar';
+    }
+  });
+
+  // Redirecionar se já logado
+  if (sessionStorage.getItem('cac_token')) {
+    window.location.href = 'portal.html';
+  }
+</script>
+
+</body>
+</html>

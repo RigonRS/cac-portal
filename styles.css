@@ -1,0 +1,390 @@
+/* ============================================================
+   CAC PORTAL — Estilos
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #f1f5f9;
+  --surface:   #ffffff;
+  --border:    #e2e8f0;
+  --accent:    #1d4ed8;
+  --accent-h:  #1e40af;
+  --text:      #1e293b;
+  --muted:     #64748b;
+  --green:     #16a34a;
+  --green-bg:  #dcfce7;
+  --yellow:    #d97706;
+  --yellow-bg: #fef9c3;
+  --red:       #dc2626;
+  --red-bg:    #fee2e2;
+  --radius:    10px;
+  --shadow:    0 2px 12px rgba(0,0,0,.08);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* ---- LOGIN ---- */
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.login-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.login-logo {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.login-logo img {
+  height: 56px;
+  object-fit: contain;
+}
+
+.login-logo .escritorio {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.login-card h1 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.login-card .subtitle {
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 15px;
+  color: var(--text);
+  background: #fff;
+  transition: border-color .15s;
+  outline: none;
+}
+
+.form-group input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(29,78,216,.12);
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 12px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-primary:hover { background: var(--accent-h); }
+.btn-primary:disabled { opacity: .6; cursor: not-allowed; }
+
+.error-msg {
+  background: var(--red-bg);
+  color: var(--red);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-top: 14px;
+  display: none;
+}
+
+.error-msg.show { display: block; }
+
+.spinner {
+  width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  display: none;
+}
+.spinner.show { display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---- PORTAL HEADER ---- */
+.portal-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+
+.portal-header .logo-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.portal-header .logo-area img {
+  height: 36px;
+  object-fit: contain;
+}
+
+.portal-header .escritorio-nome {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.portal-header .user-area {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.portal-header .saudacao {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.portal-header .saudacao strong {
+  color: var(--text);
+}
+
+.btn-sair {
+  background: none;
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .15s;
+}
+.btn-sair:hover { border-color: var(--red); color: var(--red); }
+
+/* ---- PORTAL CONTEÚDO ---- */
+.portal-main {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 28px 20px;
+}
+
+/* ---- SEÇÕES ---- */
+.section {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.section-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-header h2 {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.section-header .icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+
+.icon-blue   { background: #eff6ff; color: #2563eb; }
+.icon-green  { background: var(--green-bg); color: var(--green); }
+.icon-purple { background: #f5f3ff; color: #7c3aed; }
+
+.section-body { padding: 6px 0; }
+
+/* ---- ARQUIVOS ---- */
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--border);
+  transition: background .1s;
+}
+.file-item:last-child { border-bottom: none; }
+.file-item:hover { background: #f8fafc; }
+
+.file-icon {
+  width: 38px; height: 38px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+  background: #f1f5f9;
+}
+
+.file-info { flex: 1; min-width: 0; }
+.file-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+.btn-baixar {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.btn-baixar:hover { background: var(--accent-h); }
+
+/* ---- PROCESSOS ---- */
+.processo-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+.processo-item:last-child { border-bottom: none; }
+
+.processo-info .tipo {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.processo-info .meta {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* ---- BADGES DE STATUS ---- */
+.badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.badge-yellow { background: var(--yellow-bg); color: var(--yellow); }
+.badge-blue   { background: #eff6ff;          color: #1d4ed8; }
+.badge-green  { background: var(--green-bg);  color: var(--green); }
+.badge-red    { background: var(--red-bg);    color: var(--red); }
+.badge-gray   { background: #f1f5f9;          color: var(--muted); }
+.badge-orange { background: #fff7ed;          color: #c2410c; }
+.badge-purple { background: #f5f3ff;          color: #7c3aed; }
+
+/* ---- VALIDADES ---- */
+.validade-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+.validade-item:last-child { border-bottom: none; }
+
+.validade-label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.validade-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.validade-data {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ---- ESTADO VAZIO ---- */
+.empty-state {
+  padding: 28px 20px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ---- SKELETON LOADING ---- */
+.skeleton {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 6px;
+  height: 16px;
+  margin: 8px 20px;
+}
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 480px) {
+  .portal-header { padding: 0 14px; }
+  .portal-header .escritorio-nome { display: none; }
+  .portal-main { padding: 16px 12px; }
+  .file-item { flex-wrap: wrap; }
+  .processo-item { flex-direction: column; align-items: flex-start; }
+}

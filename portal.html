@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal do Cliente — CAC Gestão</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="favicon.png" type="image/png" />
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="portal-header">
+  <div class="logo-area">
+    <img src="logo-fox.png" alt="Logo" onerror="this.style.display='none'" />
+    <span class="escritorio-nome">Escritório CAC</span>
+  </div>
+  <div class="user-area">
+    <span class="saudacao">Olá, <strong id="nome-cliente">...</strong></span>
+    <button class="btn-sair" onclick="sair()">Sair</button>
+  </div>
+</header>
+
+<!-- CONTEÚDO -->
+<main class="portal-main">
+
+  <!-- DOCUMENTOS -->
+  <div class="section">
+    <div class="section-header">
+      <div class="icon icon-blue">📄</div>
+      <h2>Documentos disponíveis</h2>
+    </div>
+    <div class="section-body" id="secao-arquivos">
+      <div class="skeleton" style="width:60%"></div>
+      <div class="skeleton" style="width:80%"></div>
+      <div class="skeleton" style="width:50%"></div>
+    </div>
+  </div>
+
+  <!-- PROCESSOS -->
+  <div class="section">
+    <div class="section-header">
+      <div class="icon icon-purple">📋</div>
+      <h2>Processos em andamento</h2>
+    </div>
+    <div class="section-body" id="secao-processos">
+      <div class="skeleton" style="width:70%"></div>
+      <div class="skeleton" style="width:55%"></div>
+    </div>
+  </div>
+
+  <!-- VALIDADES -->
+  <div class="section">
+    <div class="section-header">
+      <div class="icon icon-green">📅</div>
+      <h2>Validade dos documentos</h2>
+    </div>
+    <div class="section-body" id="secao-validades">
+      <div class="skeleton" style="width:65%"></div>
+      <div class="skeleton" style="width:75%"></div>
+    </div>
+  </div>
+
+</main>
+
+<script src="portal.js"></script>
+</body>
+</html>
