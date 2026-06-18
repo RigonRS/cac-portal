@@ -176,7 +176,7 @@ async function handleDados(request, env, cors) {
       const data = iso.split('T')[0];
       const hoje = new Date(); hoje.setHours(0,0,0,0);
       const venc = new Date(data + 'T00:00:00');
-      const dias = Math.floor((venc - hoje) / 86400000);
+      const dias = Math.floor((venc.getTime() - hoje.getTime()) / 86400000);
       validades.push({ label, data, dias });
     };
     addValidade('CR', cliente.DataValidadeCR);
