@@ -261,6 +261,39 @@ async function handleFiles(request, env, cors) {
   }
 }
 
+// ---- ENDPOINT: GET /debug (diagnóstico — remover após testes) ----
+async function handleDebug(request, env, cors) {
+  try {
+    const msToken = await getMsToken(env);
+    const upn = env.ONEDRIVE_UPN;
+
+    const listAt = async (path) => {
+      const encoded = path.split('/').map(p => encodeURIComponent(p)).join('/');
+      const url = `${GRAPH}/users/${encodeURIComponent(upn)}/drive/root:/${encoded}:/children?$select=name,folder,file&$top=20`;
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${msToken}` } });
+      if (res.status === 404) return { status: 404, items: [] };
+      if (!res.ok) return { status: res.status, error: await res.text() };
+      const data = await res.json();
+      return { status: 200, items: (data.value || []).map(i => ({ name: i.name, type: i.folder ? 'pasta' : 'arquivo' })) };
+    };
+
+    const rootUrl = `${GRAPH}/users/${encodeURIComponent(upn)}/drive/root/children?$select=name,folder&$top=20`;
+    const rootRes = await fetch(rootUrl, { headers: { Authorization: `Bearer ${msToken}` } });
+    const rootData = rootRes.ok ? await rootRes.json() : { value: [] };
+    const root = (rootData.value || []).map(i => ({ name: i.name, type: i.folder ? 'pasta' : 'arquivo' }));
+
+    const [r1, r2, r3] = await Promise.all([
+      listAt('PRISCILA E MATHEUS'),
+      listAt('PRISCILA E MATHEUS/CR\'S'),
+      listAt('PRISCILA E MATHEUS/CR\'S/Matheus Silva Rigon'),
+    ]);
+
+    return jsonResp({ upn, root, 'PRISCILA E MATHEUS': r1, 'CR\'S': r2, 'Matheus Silva Rigon': r3 }, 200, cors);
+  } catch (e) {
+    return jsonResp({ error: e.message }, 500, cors);
+  }
+}
+
 // ---- ROTEADOR PRINCIPAL ----
 export default {
   async fetch(request, env) {
@@ -272,9 +305,10 @@ export default {
 
     const { pathname } = new URL(request.url);
 
-    if (pathname === '/auth' && request.method === 'POST') return handleAuth(request, env, cors);
+    if (pathname === '/auth'  && request.method === 'POST') return handleAuth(request, env, cors);
     if (pathname === '/dados' && request.method === 'GET')  return handleDados(request, env, cors);
     if (pathname === '/files' && request.method === 'GET')  return handleFiles(request, env, cors);
+    if (pathname === '/debug' && request.method === 'GET')  return handleDebug(request, env, cors);
 
     return jsonResp({ error: 'Rota não encontrada' }, 404, cors);
   },
