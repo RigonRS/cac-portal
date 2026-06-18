@@ -288,20 +288,22 @@ async function handleDebug(request, env, cors) {
       return { status: 200, items: (data.value || []).map(i => ({ name: i.name, type: i.folder ? 'pasta' : 'arquivo' })) };
     };
 
-    const [rootDocs, r1, r2, r3] = await Promise.all([
+    const [rootDocs, r1, r2, r3, r4] = await Promise.all([
       rootOf(docsUpn),
-      listAt(docsUpn, 'PRISCILA E MATHEUS'),
-      listAt(docsUpn, 'PRISCILA E MATHEUS/CR\'S'),
-      listAt(docsUpn, 'PRISCILA E MATHEUS/CR\'S/Matheus Silva Rigon'),
+      listAt(docsUpn, 'Documentos/PRISCILA E MATHEUS'),
+      listAt(docsUpn, 'Documentos/PRISCILA E MATHEUS/CR\'S'),
+      listAt(docsUpn, 'Documentos/PRISCILA E MATHEUS/CR\'S/Matheus Silva Rigon'),
+      listAt(docsUpn, 'Documentos/PRISCILA E MATHEUS/CR\'S/Matheus Silva Rigon/DOCUMENTOS PORTAL'),
     ]);
 
     return jsonResp({
       dados_upn: upn,
       docs_upn: docsUpn,
-      'raiz_docs_upn': rootDocs,
-      'PRISCILA E MATHEUS': r1,
-      'CR\'S': r2,
-      'Matheus Silva Rigon': r3,
+      'raiz': rootDocs,
+      'Documentos/PRISCILA E MATHEUS': r1,
+      'Documentos/.../CR\'S': r2,
+      'Documentos/.../Matheus Silva Rigon': r3,
+      'Documentos/.../DOCUMENTOS PORTAL': r4,
     }, 200, cors);
   } catch (e) {
     return jsonResp({ error: e.message }, 500, cors);
