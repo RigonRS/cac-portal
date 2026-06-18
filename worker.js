@@ -13,7 +13,7 @@
 
 const GRAPH = 'https://graph.microsoft.com/v1.0';
 const DATA_FOLDER = 'cac-gestao-dados';
-const DOCS_PATH   = 'PRISCILA E MATHEUS/CR\'S';
+const DOCS_PATH   = 'Documentos/PRISCILA E MATHEUS/CR\'S';
 const TOKEN_TTL   = 60 * 60 * 1000; // 1 hora em ms
 const STATUS_FECHADOS = ['Deferido', 'Indeferido', 'Arquivado'];
 
