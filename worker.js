@@ -288,22 +288,27 @@ async function handleDebug(request, env, cors) {
       return { status: 200, items: (data.value || []).map(i => ({ name: i.name, type: i.folder ? 'pasta' : 'arquivo' })) };
     };
 
-    const [rootDocs, r1, r2, r3, r4] = await Promise.all([
+    const [rootDocs, dentroDocumentos, r1, r2] = await Promise.all([
       rootOf(docsUpn),
-      listAt(docsUpn, 'Documentos/PRISCILA E MATHEUS'),
-      listAt(docsUpn, 'Documentos/PRISCILA E MATHEUS/CR\'S'),
-      listAt(docsUpn, 'Documentos/PRISCILA E MATHEUS/CR\'S/Matheus Silva Rigon'),
-      listAt(docsUpn, 'Documentos/PRISCILA E MATHEUS/CR\'S/Matheus Silva Rigon/DOCUMENTOS PORTAL'),
+      listAt(docsUpn, 'Documentos'),
+      listAt(docsUpn, 'PRISCILA E MATHEUS'),
+      listAt(docsUpn, 'PRISCILA E MATHEUS/CR\'S'),
     ]);
+
+    // Busca por PRISCILA em toda a raiz via search
+    const searchUrl = `${GRAPH}/users/${encodeURIComponent(docsUpn)}/drive/root/search(q='PRISCILA')?$select=name,parentReference,webUrl&$top=10`;
+    const searchRes = await fetch(searchUrl, { headers: { Authorization: `Bearer ${msToken}` } });
+    const searchData = searchRes.ok ? await searchRes.json() : { value: [] };
+    const searchResults = (searchData.value || []).map(i => ({ name: i.name, path: i.parentReference?.path, url: i.webUrl }));
 
     return jsonResp({
       dados_upn: upn,
       docs_upn: docsUpn,
-      'raiz': rootDocs,
-      'Documentos/PRISCILA E MATHEUS': r1,
-      'Documentos/.../CR\'S': r2,
-      'Documentos/.../Matheus Silva Rigon': r3,
-      'Documentos/.../DOCUMENTOS PORTAL': r4,
+      'raiz_simone': rootDocs,
+      'dentro_de_Documentos': dentroDocumentos,
+      'PRISCILA E MATHEUS (raiz)': r1,
+      'CR\'S (raiz)': r2,
+      'busca_PRISCILA': searchResults,
     }, 200, cors);
   } catch (e) {
     return jsonResp({ error: e.message }, 500, cors);
