@@ -84,10 +84,22 @@ async function listFolder(msToken, upn, folderPath) {
   return (data.value || []).filter(i => i.file);
 }
 
+// ---- SHAREPOINT: resolver site path → ID ----
+let _cachedSiteId = null;
+async function getDocsSiteId(msToken) {
+  if (_cachedSiteId) return _cachedSiteId;
+  const res = await fetch(`${GRAPH}/sites/${DOCS_SITE}`, { headers: { Authorization: `Bearer ${msToken}` } });
+  if (!res.ok) throw new Error(`Site não encontrado (HTTP ${res.status}): ${await res.text()}`);
+  const data = await res.json();
+  _cachedSiteId = data.id;
+  return _cachedSiteId;
+}
+
 // ---- SHAREPOINT: listar arquivos de uma pasta no site ----
-async function listFolderSite(msToken, sitePath, folderPath) {
+async function listFolderSite(msToken, folderPath) {
+  const siteId = await getDocsSiteId(msToken);
   const encoded = folderPath.split('/').map(p => encodeURIComponent(p)).join('/');
-  const url = `${GRAPH}/sites/${sitePath}/drive/root:/${encoded}:/children?$select=name,size,lastModifiedDateTime,file,id`;
+  const url = `${GRAPH}/sites/${siteId}/drive/root:/${encoded}:/children?$select=name,size,lastModifiedDateTime,file,id`;
   const res = await fetch(url, { headers: { Authorization: `Bearer ${msToken}` } });
   if (res.status === 404) return [];
   if (!res.ok) {
@@ -99,9 +111,10 @@ async function listFolderSite(msToken, sitePath, folderPath) {
 }
 
 // ---- SHAREPOINT: URL de download de um item ----
-async function getDownloadUrlSite(msToken, sitePath, itemId) {
+async function getDownloadUrlSite(msToken, itemId) {
+  const siteId = await getDocsSiteId(msToken);
   const res = await fetch(
-    `${GRAPH}/sites/${sitePath}/drive/items/${itemId}/content`,
+    `${GRAPH}/sites/${siteId}/drive/items/${itemId}/content`,
     { headers: { Authorization: `Bearer ${msToken}` }, redirect: 'manual' }
   );
   return res.headers.get('Location') || null;
@@ -261,11 +274,11 @@ async function handleFiles(request, env, cors) {
   try {
     const msToken = await getMsToken(env);
     const folderPath = `${DOCS_PATH}/${payload.nome}/DOCUMENTOS PORTAL`;
-    const items = await listFolderSite(msToken, DOCS_SITE, folderPath);
+    const items = await listFolderSite(msToken, folderPath);
 
     const files = await Promise.all(items.map(async f => {
       let downloadUrl = null;
-      try { downloadUrl = await getDownloadUrlSite(msToken, DOCS_SITE, f.id); } catch { /* sem link */ }
+      try { downloadUrl = await getDownloadUrlSite(msToken, f.id); } catch { /* sem link */ }
       return {
         name:        f.name,
         size:        f.size,
@@ -305,9 +318,11 @@ async function handleDebug(request, env, cors) {
       return { status: 200, items: (data.value || []).map(i => ({ name: i.name, type: i.folder ? 'pasta' : 'arquivo' })) };
     };
 
+    const siteId = await getDocsSiteId(msToken);
+
     const listSite = async (folderPath) => {
       const encoded = folderPath.split('/').map(p => encodeURIComponent(p)).join('/');
-      const url = `${GRAPH}/sites/${DOCS_SITE}/drive/root:/${encoded}:/children?$select=name,folder,file&$top=20`;
+      const url = `${GRAPH}/sites/${siteId}/drive/root:/${encoded}:/children?$select=name,folder,file&$top=20`;
       const res = await fetch(url, { headers: { Authorization: `Bearer ${msToken}` } });
       if (res.status === 404) return { status: 404, items: [] };
       if (!res.ok) return { status: res.status, error: await res.text() };
@@ -315,7 +330,7 @@ async function handleDebug(request, env, cors) {
       return { status: 200, items: (data.value || []).map(i => ({ name: i.name, type: i.folder ? 'pasta' : 'arquivo' })) };
     };
 
-    const siteRootRes = await fetch(`${GRAPH}/sites/${DOCS_SITE}/drive/root/children?$select=name,folder,file&$top=20`, { headers: { Authorization: `Bearer ${msToken}` } });
+    const siteRootRes = await fetch(`${GRAPH}/sites/${siteId}/drive/root/children?$select=name,folder,file&$top=20`, { headers: { Authorization: `Bearer ${msToken}` } });
     const siteRoot = siteRootRes.ok ? { status: 200, items: (await siteRootRes.json()).value?.map(i => ({ name: i.name, type: i.folder ? 'pasta' : 'arquivo' })) } : { status: siteRootRes.status, error: await siteRootRes.text() };
 
     const [r1, r2, r3] = await Promise.all([
