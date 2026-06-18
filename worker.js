@@ -162,10 +162,11 @@ async function handleDados(request, env, cors) {
 
   try {
     const msToken = await getMsToken(env);
-    const [clientes, processos, documentos] = await Promise.all([
+    const [clientes, processos, documentos, armas] = await Promise.all([
       readJson(msToken, env.ONEDRIVE_UPN, `${DATA_FOLDER}/clientes.json`),
       readJson(msToken, env.ONEDRIVE_UPN, `${DATA_FOLDER}/processos.json`),
       readJson(msToken, env.ONEDRIVE_UPN, `${DATA_FOLDER}/documentos.json`),
+      readJson(msToken, env.ONEDRIVE_UPN, `${DATA_FOLDER}/armas.json`),
     ]);
 
     const cliente = (clientes || []).find(c => String(c.id) === payload.sub) || {};
@@ -198,7 +199,22 @@ async function handleDados(request, env, cors) {
         protocolo: p.NumeroProtocolo || null,
       }));
 
-    return jsonResp({ validades, processos: processosAtivos }, 200, cors);
+    const acervoArmas = (armas || [])
+      .filter(a => String(a.ClienteId) === payload.sub)
+      .map(a => ({
+        marca:      a.Marca || null,
+        modelo:     a.Modelo || null,
+        especie:    a.Especie || null,
+        calibre:    a.Calibre || null,
+        grupo:      a.GrupoCalibre || null,
+        atividade:  a.AtividadeCadastrada || null,
+        orgao:      a.OrgaoCadastro || null,
+        serie:      a.NumeroSerie || null,
+        sigma:      a.NumeroSIGMA || null,
+        sinarm:     a.NumeroSINARM || null,
+      }));
+
+    return jsonResp({ validades, processos: processosAtivos, armas: acervoArmas }, 200, cors);
   } catch (e) {
     return jsonResp({ error: e.message }, 500, cors);
   }
@@ -216,7 +232,7 @@ async function handleFiles(request, env, cors) {
 
   try {
     const msToken = await getMsToken(env);
-    const folderPath = `${DOCS_PATH}/${payload.nome}`;
+    const folderPath = `${DOCS_PATH}/${payload.nome}/DOCUMENTOS PORTAL`;
     const items = await listFolder(msToken, env.ONEDRIVE_UPN, folderPath);
 
     const files = items.map(f => ({

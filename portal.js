@@ -130,6 +130,37 @@ function renderValidades(validades) {
   `).join('');
 }
 
+// ---- RENDERIZAR ARMAS ----
+function renderArmas(armas) {
+  const el = document.getElementById('secao-armas');
+  if (!armas || armas.length === 0) {
+    el.innerHTML = '<div class="empty-state">Nenhuma arma cadastrada.</div>';
+    return;
+  }
+  el.innerHTML = armas.map(a => `
+    <div class="arma-item">
+      <div class="arma-icon">🔫</div>
+      <div class="arma-info">
+        <div class="arma-nome">${esc(a.marca || '')} ${esc(a.modelo || '')}</div>
+        <div class="arma-meta">
+          ${a.especie ? esc(a.especie) + ' · ' : ''}${esc(a.calibre || '—')}
+          ${a.serie ? ' · Série: ' + esc(a.serie) : ''}
+        </div>
+        ${(a.sigma || a.sinarm || a.orgao) ? `<div class="arma-meta">
+          ${a.sigma  ? 'SIGMA: '  + esc(a.sigma)  + (a.sinarm || a.orgao ? ' · ' : '') : ''}
+          ${a.sinarm ? 'SINARM: ' + esc(a.sinarm) + (a.orgao ? ' · ' : '') : ''}
+          ${a.orgao  ? esc(a.orgao) : ''}
+        </div>` : ''}
+      </div>
+      <div class="arma-badges">
+        ${a.atividade ? `<span class="badge badge-blue">${esc(a.atividade)}</span>` : ''}
+        ${a.grupo === 'Restrito'  ? `<span class="badge badge-red">Restrito</span>`    : ''}
+        ${a.grupo === 'Permitido' ? `<span class="badge badge-green">Permitido</span>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
 // ---- CARREGAR DADOS ----
 async function carregarPortal() {
   try {
@@ -146,18 +177,20 @@ async function carregarPortal() {
       return;
     }
 
-    const dados = resDados.ok  ? await resDados.json()  : { validades: [], processos: [] };
+    const dados = resDados.ok  ? await resDados.json()  : { validades: [], processos: [], armas: [] };
     const fData = resFiles.ok  ? await resFiles.json()  : { files: [] };
 
     renderArquivos(fData.files);
     renderProcessos(dados.processos);
     renderValidades(dados.validades);
+    renderArmas(dados.armas);
 
   } catch (err) {
     document.getElementById('secao-arquivos').innerHTML =
       '<div class="empty-state">Erro ao carregar dados. Verifique sua conexão e tente novamente.</div>';
     document.getElementById('secao-processos').innerHTML = '';
     document.getElementById('secao-validades').innerHTML = '';
+    document.getElementById('secao-armas').innerHTML = '';
   }
 }
 
