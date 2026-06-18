@@ -288,20 +288,34 @@ async function handleDebug(request, env, cors) {
       return { status: 200, items: (data.value || []).map(i => ({ name: i.name, type: i.folder ? 'pasta' : 'arquivo' })) };
     };
 
-    const [rootDocs, r1, r2, r3] = await Promise.all([
-      rootOf(docsUpn),
-      listAt(docsUpn, 'PRISCILA E MATHEUS'),
-      listAt(docsUpn, 'PRISCILA E MATHEUS/CR\'S'),
-      listAt(docsUpn, 'PRISCILA E MATHEUS/CR\'S/Matheus Silva Rigon/DOCUMENTOS PORTAL'),
-    ]);
+    // Descobrir o host do SharePoint a partir do tenant
+    const tenantDomain = env.AZURE_TENANT_ID
+      ? (env.ONEDRIVE_UPN || '').split('@')[1].replace('.onmicrosoft.com','')
+      : 'simonebpegoraro';
+    const spHost = `${tenantDomain}.sharepoint.com`;
+
+    // Listar sites do tenant
+    const sitesRes = await fetch(`${GRAPH}/sites?search=*&$select=id,name,webUrl&$top=20`, { headers: { Authorization: `Bearer ${msToken}` } });
+    const sitesData = sitesRes.ok ? await sitesRes.json() : {};
+    const sites = (sitesData.value || []).map(s => ({ id: s.id, name: s.name, url: s.webUrl }));
+
+    // Tentar acessar o root site do SharePoint
+    const rootSiteRes = await fetch(`${GRAPH}/sites/${spHost}`, { headers: { Authorization: `Bearer ${msToken}` } });
+    const rootSite = rootSiteRes.ok ? await rootSiteRes.json() : { error: await rootSiteRes.text() };
+
+    // Tentar listar a biblioteca Documents do root site
+    let rootSiteDocs = {};
+    if (rootSite.id) {
+      const driveRes = await fetch(`${GRAPH}/sites/${rootSite.id}/drive/root/children?$select=name,folder,file&$top=20`, { headers: { Authorization: `Bearer ${msToken}` } });
+      rootSiteDocs = driveRes.ok ? { status: 200, items: (await driveRes.json()).value?.map(i => ({ name: i.name, type: i.folder ? 'pasta' : 'arquivo' })) } : { status: driveRes.status, error: await driveRes.text() };
+    }
 
     return jsonResp({
       dados_upn: upn,
-      docs_upn: docsUpn,
-      'raiz': rootDocs,
-      'PRISCILA E MATHEUS': r1,
-      'CR\'S': r2,
-      'DOCUMENTOS PORTAL': r3,
+      spHost,
+      sites,
+      rootSite: { id: rootSite.id, name: rootSite.name, url: rootSite.webUrl },
+      'rootSite_Documents': rootSiteDocs,
     }, 200, cors);
   } catch (e) {
     return jsonResp({ error: e.message }, 500, cors);
