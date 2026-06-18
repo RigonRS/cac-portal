@@ -6,7 +6,8 @@
 //   AZURE_TENANT_ID   — be520b86-b5ad-44dd-acd2-b6a56d438ca5
 //   AZURE_CLIENT_ID   — b9e4b955-b4e0-498c-b1c1-e996cc91dcf0
 //   AZURE_CLIENT_SECRET — gerar no portal.azure.com
-//   ONEDRIVE_UPN      — matheus@simonebpegoraro.onmicrosoft.com
+//   ONEDRIVE_UPN      — matheus@simonebpegoraro.onmicrosoft.com  (dados JSON)
+//   DOCS_UPN          — email da Simone (OneDrive onde está PRISCILA E MATHEUS)
 //   WORKER_SECRET     — string longa aleatória (64+ chars)
 //   PORTAL_ORIGIN     — https://rigonrs.github.io
 // ============================================================
@@ -235,14 +236,15 @@ async function handleFiles(request, env, cors) {
 
   try {
     const msToken = await getMsToken(env);
+    const docsUpn = env.DOCS_UPN || env.ONEDRIVE_UPN;
     const folderPath = `${DOCS_PATH}/${payload.nome}/DOCUMENTOS PORTAL`;
-    const items = await listFolder(msToken, env.ONEDRIVE_UPN, folderPath);
+    const items = await listFolder(msToken, docsUpn, folderPath);
 
     const files = await Promise.all(items.map(async f => {
       let downloadUrl = null;
       try {
         const dlRes = await fetch(
-          `${GRAPH}/users/${encodeURIComponent(env.ONEDRIVE_UPN)}/drive/items/${f.id}/content`,
+          `${GRAPH}/users/${encodeURIComponent(docsUpn)}/drive/items/${f.id}/content`,
           { headers: { Authorization: `Bearer ${msToken}` }, redirect: 'manual' }
         );
         downloadUrl = dlRes.headers.get('Location') || null;
@@ -266,10 +268,11 @@ async function handleDebug(request, env, cors) {
   try {
     const msToken = await getMsToken(env);
     const upn = env.ONEDRIVE_UPN;
+    const docsUpn = env.DOCS_UPN || env.ONEDRIVE_UPN;
 
-    const listAt = async (path) => {
+    const listAt = async (targetUpn, path) => {
       const encoded = path.split('/').map(p => encodeURIComponent(p)).join('/');
-      const url = `${GRAPH}/users/${encodeURIComponent(upn)}/drive/root:/${encoded}:/children?$select=name,folder,file&$top=20`;
+      const url = `${GRAPH}/users/${encodeURIComponent(targetUpn)}/drive/root:/${encoded}:/children?$select=name,folder,file&$top=20`;
       const res = await fetch(url, { headers: { Authorization: `Bearer ${msToken}` } });
       if (res.status === 404) return { status: 404, items: [] };
       if (!res.ok) return { status: res.status, error: await res.text() };
@@ -277,28 +280,28 @@ async function handleDebug(request, env, cors) {
       return { status: 200, items: (data.value || []).map(i => ({ name: i.name, type: i.folder ? 'pasta' : 'arquivo' })) };
     };
 
-    const rootUrl = `${GRAPH}/users/${encodeURIComponent(upn)}/drive/root/children?$select=name,folder&$top=20`;
-    const rootRes = await fetch(rootUrl, { headers: { Authorization: `Bearer ${msToken}` } });
-    const rootData = rootRes.ok ? await rootRes.json() : { value: [] };
-    const root = (rootData.value || []).map(i => ({ name: i.name, type: i.folder ? 'pasta' : 'arquivo' }));
+    const rootOf = async (targetUpn) => {
+      const url = `${GRAPH}/users/${encodeURIComponent(targetUpn)}/drive/root/children?$select=name,folder&$top=20`;
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${msToken}` } });
+      if (!res.ok) return { status: res.status, error: await res.text() };
+      const data = await res.json();
+      return { status: 200, items: (data.value || []).map(i => ({ name: i.name, type: i.folder ? 'pasta' : 'arquivo' })) };
+    };
 
-    const [r1, r2, r3, r4, r5, r6] = await Promise.all([
-      listAt('Documentos'),
-      listAt('Documentos/PRISCILA E MATHEUS'),
-      listAt('Documentos/PRISCILA E MATHEUS/CR\'S'),
-      listAt('Documentos/PRISCILA E MATHEUS/CR\'S/Matheus Silva Rigon'),
-      listAt('Documentos/PRISCILA E MATHEUS/CR\'S/Matheus Silva Rigon/DOCUMENTOS PORTAL'),
-      listAt('PRISCILA E MATHEUS'),
+    const [rootDocs, r1, r2, r3] = await Promise.all([
+      rootOf(docsUpn),
+      listAt(docsUpn, 'PRISCILA E MATHEUS'),
+      listAt(docsUpn, 'PRISCILA E MATHEUS/CR\'S'),
+      listAt(docsUpn, 'PRISCILA E MATHEUS/CR\'S/Matheus Silva Rigon'),
     ]);
 
     return jsonResp({
-      upn, root,
-      'Documentos': r1,
-      'Documentos/PRISCILA E MATHEUS': r2,
-      'Documentos/PRISCILA E MATHEUS/CRS': r3,
-      'Documentos/.../Matheus Silva Rigon': r4,
-      'Documentos/.../DOCUMENTOS PORTAL': r5,
-      'PRISCILA E MATHEUS (sem Documentos)': r6,
+      dados_upn: upn,
+      docs_upn: docsUpn,
+      'raiz_docs_upn': rootDocs,
+      'PRISCILA E MATHEUS': r1,
+      'CR\'S': r2,
+      'Matheus Silva Rigon': r3,
     }, 200, cors);
   } catch (e) {
     return jsonResp({ error: e.message }, 500, cors);
