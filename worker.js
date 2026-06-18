@@ -14,7 +14,8 @@
 
 const GRAPH = 'https://graph.microsoft.com/v1.0';
 const DATA_FOLDER = 'cac-gestao-dados';
-const DOCS_PATH   = 'Documentos/PRISCILA E MATHEUS/CR\'S';
+const DOCS_SITE   = 'simonebpegoraro.sharepoint.com:/sites/SimonePegoraro';
+const DOCS_PATH   = 'PRISCILA E MATHEUS/CR\'S';
 const TOKEN_TTL   = 60 * 60 * 1000; // 1 hora em ms
 const STATUS_FECHADOS = ['Deferido', 'Indeferido', 'Arquivado'];
 
@@ -69,7 +70,7 @@ async function readJson(msToken, upn, path) {
   return res.json();
 }
 
-// ---- ONEDRIVE: listar arquivos de uma pasta ----
+// ---- ONEDRIVE: listar arquivos de uma pasta (user drive) ----
 async function listFolder(msToken, upn, folderPath) {
   const encoded = folderPath.split('/').map(p => encodeURIComponent(p)).join('/');
   const url = `${GRAPH}/users/${encodeURIComponent(upn)}/drive/root:/${encoded}:/children?$select=name,size,lastModifiedDateTime,file,id`;
@@ -81,6 +82,29 @@ async function listFolder(msToken, upn, folderPath) {
   }
   const data = await res.json();
   return (data.value || []).filter(i => i.file);
+}
+
+// ---- SHAREPOINT: listar arquivos de uma pasta no site ----
+async function listFolderSite(msToken, sitePath, folderPath) {
+  const encoded = folderPath.split('/').map(p => encodeURIComponent(p)).join('/');
+  const url = `${GRAPH}/sites/${sitePath}/drive/root:/${encoded}:/children?$select=name,size,lastModifiedDateTime,file,id`;
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${msToken}` } });
+  if (res.status === 404) return [];
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Erro ao listar pasta no site (HTTP ${res.status}): ${body}`);
+  }
+  const data = await res.json();
+  return (data.value || []).filter(i => i.file);
+}
+
+// ---- SHAREPOINT: URL de download de um item ----
+async function getDownloadUrlSite(msToken, sitePath, itemId) {
+  const res = await fetch(
+    `${GRAPH}/sites/${sitePath}/drive/items/${itemId}/content`,
+    { headers: { Authorization: `Bearer ${msToken}` }, redirect: 'manual' }
+  );
+  return res.headers.get('Location') || null;
 }
 
 // ---- TOKEN HMAC-SHA256 ----
@@ -236,19 +260,12 @@ async function handleFiles(request, env, cors) {
 
   try {
     const msToken = await getMsToken(env);
-    const docsUpn = env.DOCS_UPN || env.ONEDRIVE_UPN;
     const folderPath = `${DOCS_PATH}/${payload.nome}/DOCUMENTOS PORTAL`;
-    const items = await listFolder(msToken, docsUpn, folderPath);
+    const items = await listFolderSite(msToken, DOCS_SITE, folderPath);
 
     const files = await Promise.all(items.map(async f => {
       let downloadUrl = null;
-      try {
-        const dlRes = await fetch(
-          `${GRAPH}/users/${encodeURIComponent(docsUpn)}/drive/items/${f.id}/content`,
-          { headers: { Authorization: `Bearer ${msToken}` }, redirect: 'manual' }
-        );
-        downloadUrl = dlRes.headers.get('Location') || null;
-      } catch { /* sem link de download */ }
+      try { downloadUrl = await getDownloadUrlSite(msToken, DOCS_SITE, f.id); } catch { /* sem link */ }
       return {
         name:        f.name,
         size:        f.size,
@@ -288,34 +305,32 @@ async function handleDebug(request, env, cors) {
       return { status: 200, items: (data.value || []).map(i => ({ name: i.name, type: i.folder ? 'pasta' : 'arquivo' })) };
     };
 
-    // Descobrir o host do SharePoint a partir do tenant
-    const tenantDomain = env.AZURE_TENANT_ID
-      ? (env.ONEDRIVE_UPN || '').split('@')[1].replace('.onmicrosoft.com','')
-      : 'simonebpegoraro';
-    const spHost = `${tenantDomain}.sharepoint.com`;
+    const listSite = async (folderPath) => {
+      const encoded = folderPath.split('/').map(p => encodeURIComponent(p)).join('/');
+      const url = `${GRAPH}/sites/${DOCS_SITE}/drive/root:/${encoded}:/children?$select=name,folder,file&$top=20`;
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${msToken}` } });
+      if (res.status === 404) return { status: 404, items: [] };
+      if (!res.ok) return { status: res.status, error: await res.text() };
+      const data = await res.json();
+      return { status: 200, items: (data.value || []).map(i => ({ name: i.name, type: i.folder ? 'pasta' : 'arquivo' })) };
+    };
 
-    // Listar sites do tenant
-    const sitesRes = await fetch(`${GRAPH}/sites?search=*&$select=id,name,webUrl&$top=20`, { headers: { Authorization: `Bearer ${msToken}` } });
-    const sitesData = sitesRes.ok ? await sitesRes.json() : {};
-    const sites = (sitesData.value || []).map(s => ({ id: s.id, name: s.name, url: s.webUrl }));
+    const siteRootRes = await fetch(`${GRAPH}/sites/${DOCS_SITE}/drive/root/children?$select=name,folder,file&$top=20`, { headers: { Authorization: `Bearer ${msToken}` } });
+    const siteRoot = siteRootRes.ok ? { status: 200, items: (await siteRootRes.json()).value?.map(i => ({ name: i.name, type: i.folder ? 'pasta' : 'arquivo' })) } : { status: siteRootRes.status, error: await siteRootRes.text() };
 
-    // Tentar acessar o root site do SharePoint
-    const rootSiteRes = await fetch(`${GRAPH}/sites/${spHost}`, { headers: { Authorization: `Bearer ${msToken}` } });
-    const rootSite = rootSiteRes.ok ? await rootSiteRes.json() : { error: await rootSiteRes.text() };
-
-    // Tentar listar a biblioteca Documents do root site
-    let rootSiteDocs = {};
-    if (rootSite.id) {
-      const driveRes = await fetch(`${GRAPH}/sites/${rootSite.id}/drive/root/children?$select=name,folder,file&$top=20`, { headers: { Authorization: `Bearer ${msToken}` } });
-      rootSiteDocs = driveRes.ok ? { status: 200, items: (await driveRes.json()).value?.map(i => ({ name: i.name, type: i.folder ? 'pasta' : 'arquivo' })) } : { status: driveRes.status, error: await driveRes.text() };
-    }
+    const [r1, r2, r3] = await Promise.all([
+      listSite('PRISCILA E MATHEUS'),
+      listSite('PRISCILA E MATHEUS/CR\'S'),
+      listSite('PRISCILA E MATHEUS/CR\'S/Matheus Silva Rigon/DOCUMENTOS PORTAL'),
+    ]);
 
     return jsonResp({
       dados_upn: upn,
-      spHost,
-      sites,
-      rootSite: { id: rootSite.id, name: rootSite.name, url: rootSite.webUrl },
-      'rootSite_Documents': rootSiteDocs,
+      docs_site: DOCS_SITE,
+      'raiz_site': siteRoot,
+      'PRISCILA E MATHEUS': r1,
+      'CR\'S': r2,
+      'DOCUMENTOS PORTAL': r3,
     }, 200, cors);
   } catch (e) {
     return jsonResp({ error: e.message }, 500, cors);
