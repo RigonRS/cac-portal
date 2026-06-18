@@ -13,7 +13,7 @@
 
 const GRAPH = 'https://graph.microsoft.com/v1.0';
 const DATA_FOLDER = 'cac-gestao-dados';
-const DOCS_PATH   = 'Documentos/PRISCILA E MATHEUS/CR\'S';
+const DOCS_PATH   = 'PRISCILA E MATHEUS/CR\'S';
 const TOKEN_TTL   = 60 * 60 * 1000; // 1 hora em ms
 const STATUS_FECHADOS = ['Deferido', 'Indeferido', 'Arquivado'];
 
@@ -71,12 +71,15 @@ async function readJson(msToken, upn, path) {
 // ---- ONEDRIVE: listar arquivos de uma pasta ----
 async function listFolder(msToken, upn, folderPath) {
   const encoded = folderPath.split('/').map(p => encodeURIComponent(p)).join('/');
-  const url = `${GRAPH}/users/${encodeURIComponent(upn)}/drive/root:/${encoded}:/children?$select=name,size,lastModifiedDateTime,file,@microsoft.graph.downloadUrl`;
+  const url = `${GRAPH}/users/${encodeURIComponent(upn)}/drive/root:/${encoded}:/children?$select=name,size,lastModifiedDateTime,file,id`;
   const res = await fetch(url, { headers: { Authorization: `Bearer ${msToken}` } });
   if (res.status === 404) return [];
-  if (!res.ok) throw new Error(`Erro ao listar pasta: HTTP ${res.status}`);
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Erro ao listar pasta (HTTP ${res.status}): ${body}`);
+  }
   const data = await res.json();
-  return (data.value || []).filter(i => i.file); // apenas arquivos, não subpastas
+  return (data.value || []).filter(i => i.file);
 }
 
 // ---- TOKEN HMAC-SHA256 ----
@@ -235,11 +238,21 @@ async function handleFiles(request, env, cors) {
     const folderPath = `${DOCS_PATH}/${payload.nome}/DOCUMENTOS PORTAL`;
     const items = await listFolder(msToken, env.ONEDRIVE_UPN, folderPath);
 
-    const files = items.map(f => ({
-      name:         f.name,
-      size:         f.size,
-      modified:     f.lastModifiedDateTime ? f.lastModifiedDateTime.split('T')[0] : null,
-      downloadUrl:  f['@microsoft.graph.downloadUrl'] || null,
+    const files = await Promise.all(items.map(async f => {
+      let downloadUrl = null;
+      try {
+        const dlRes = await fetch(
+          `${GRAPH}/users/${encodeURIComponent(env.ONEDRIVE_UPN)}/drive/items/${f.id}/content`,
+          { headers: { Authorization: `Bearer ${msToken}` }, redirect: 'manual' }
+        );
+        downloadUrl = dlRes.headers.get('Location') || null;
+      } catch { /* sem link de download */ }
+      return {
+        name:        f.name,
+        size:        f.size,
+        modified:    f.lastModifiedDateTime ? f.lastModifiedDateTime.split('T')[0] : null,
+        downloadUrl,
+      };
     }));
 
     return jsonResp({ files }, 200, cors);

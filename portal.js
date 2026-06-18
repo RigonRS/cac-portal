@@ -178,9 +178,16 @@ async function carregarPortal() {
     }
 
     const dados = resDados.ok  ? await resDados.json()  : { validades: [], processos: [], armas: [] };
-    const fData = resFiles.ok  ? await resFiles.json()  : { files: [] };
+    let fData = { files: [] };
+    if (resFiles.ok) {
+      fData = await resFiles.json();
+    } else {
+      const errBody = await resFiles.json().catch(() => ({}));
+      document.getElementById('secao-arquivos').innerHTML =
+        `<div class="empty-state" style="color:var(--red)">Erro ao carregar documentos: ${errBody.error || 'HTTP ' + resFiles.status}</div>`;
+    }
 
-    renderArquivos(fData.files);
+    if (resFiles.ok) renderArquivos(fData.files);
     renderProcessos(dados.processos);
     renderValidades(dados.validades);
     renderArmas(dados.armas);
