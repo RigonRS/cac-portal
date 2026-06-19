@@ -233,12 +233,35 @@ async function handleDados(request, env, cors) {
 
     const processosAtivos = (processos || [])
       .filter(p => String(p.ClienteId) === payload.sub && !STATUS_FECHADOS.includes(p.Status))
-      .map(p => ({
-        tipo:      p.TipoProcesso,
-        status:    p.Status,
-        abertura:  p.DataAbertura ? p.DataAbertura.split('T')[0] : null,
-        protocolo: p.NumeroProtocolo || null,
-      }));
+      .map(p => {
+        let dadosEsp = {};
+        try { dadosEsp = p.DadosEspecificosJSON ? JSON.parse(p.DadosEspecificosJSON) : {}; } catch {}
+        // Extrai marca/modelo do campo armaId (formato: "id|atividade|marca|modelo")
+        const armaDesc = (() => {
+          const v = dadosEsp.armaId || '';
+          const parts = v.split('|');
+          if (parts.length >= 4) return [parts[2], parts[3]].filter(Boolean).join(' ');
+          return null;
+        })();
+        return {
+          tipo:   p.TipoProcesso,
+          status: p.Status,
+          dados:  {
+            arma:          armaDesc,
+            tipoGuia:      dadosEsp.tipoGuia      || null,
+            cidadeGuia:    dadosEsp.cidadeGuia    || null,
+            ufGuia:        dadosEsp.ufGuia        || null,
+            nomeClube:     dadosEsp.nomeClube     || null,
+            endLogradouro: dadosEsp.endLogradouro || null,
+            endNumero:     dadosEsp.endNumero     || null,
+            endCidade:     dadosEsp.endCidade     || null,
+            endUF:         dadosEsp.endUF         || null,
+            atividade:     dadosEsp.atividade     || null,
+          },
+        };
+      });
+
+    const categorias = (cliente.Categoria || '').split(',').map(c => c.trim()).filter(Boolean);
 
     const acervoArmas = (armas || [])
       .filter(a => String(a.ClienteId) === payload.sub)
@@ -255,7 +278,7 @@ async function handleDados(request, env, cors) {
         sinarm:     a.NumeroSINARM || null,
       }));
 
-    return jsonResp({ validades, processos: processosAtivos, armas: acervoArmas }, 200, cors);
+    return jsonResp({ validades, processos: processosAtivos, armas: acervoArmas, categorias }, 200, cors);
   } catch (e) {
     return jsonResp({ error: e.message }, 500, cors);
   }

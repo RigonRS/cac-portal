@@ -363,6 +363,16 @@ body {
 }
 
 /* ---- ACERVO DE ARMAS ---- */
+.acervo-categoria { border-bottom: 1px solid var(--border); }
+.acervo-categoria:last-child { border-bottom: none; }
+.acervo-categoria-header { padding: 10px 20px 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.acervo-limites { padding: 4px 20px 8px; }
+.acervo-barra { margin-bottom: 8px; }
+.acervo-barra-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+.acervo-barra-track { height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
+.acervo-barra-fill { height: 100%; border-radius: 4px; transition: width .3s; }
+.acervo-lista { padding: 0; }
+
 .arma-item {
   display: flex;
   align-items: center;
@@ -371,7 +381,7 @@ body {
   border-bottom: 1px solid var(--border);
   transition: background .1s;
 }
-.arma-item:last-child { border-bottom: none; }
+.acervo-lista .arma-item:last-child { border-bottom: none; }
 .arma-item:hover { background: #f8fafc; }
 
 .arma-icon {
