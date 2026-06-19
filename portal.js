@@ -4,7 +4,7 @@
 
 // ---- CONFIGURAÇÃO ----
 // Substitua pela URL do seu Cloudflare Worker após o deploy
-const WORKER_URL = 'https://worker.prbelico.com.br';
+const WORKER_URL = 'https://cac-portal.silvarigon.workers.dev';
 
 // ---- SESSÃO ----
 const token = sessionStorage.getItem('cac_token');
