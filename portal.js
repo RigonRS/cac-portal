@@ -107,7 +107,16 @@ function infoProcesso(p) {
     if (end.length) linhas.push('Novo Endereço: ' + end.map(esc).join(', '));
   } else if (tipo === 'Inclusão de Atividade' || tipo === 'Exclusão de Atividade') {
     if (d.atividade) linhas.push(esc(d.atividade));
-  } else if (/transfer[eê]ncia|aquisi[çc][ãa]o/i.test(tipo)) {
+  } else if ([
+    'Transferência de Arma SINARM x SIGMA',
+    'Transferência de Arma SIGMA x SIGMA',
+    'Transferência de Arma SINARM x SINARM',
+    'Transferência de Arma SIGMA x SINARM',
+    'Aquisição de Arma SIGMA',
+    'Aquisição de Arma PF',
+    'Renovação de CRAF',
+    'Segunda via de CRAF',
+  ].includes(tipo)) {
     if (d.arma) linhas.push(esc(d.arma));
   } else {
     if (d.arma) linhas.push(esc(d.arma));
