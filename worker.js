@@ -247,7 +247,8 @@ async function handleDados(request, env, cors) {
         const armaDesc = parseArmaId(dadosEsp.armaId)
           || parseArmaId(dadosEsp.armaIdMesmoTitular)
           || parseArmaId(dadosEsp.armaIdVendedor)
-          || null;
+          || [dadosEsp.marcaArma, dadosEsp.modeloArma].filter(Boolean).join(' ') || null
+          || [dadosEsp.especie, dadosEsp.calibre].filter(Boolean).join(' ') || null;
         return {
           tipo:   p.TipoProcesso,
           status: p.Status,
@@ -316,6 +317,34 @@ async function handleFiles(request, env, cors) {
     }));
 
     return jsonResp({ files }, 200, cors);
+  } catch (e) {
+    return jsonResp({ error: e.message }, 500, cors);
+  }
+}
+
+// ---- ENDPOINT: GET /debug-processos?token=xxx ----
+async function handleDebugProcessos(request, env, cors) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get('token');
+  if (!token) return jsonResp({ error: 'Token não fornecido' }, 401, cors);
+
+  let payload;
+  try { payload = await verifyToken(token, env.WORKER_SECRET); }
+  catch (e) { return jsonResp({ error: e.message }, 401, cors); }
+
+  try {
+    const msToken = await getMsToken(env);
+    const processos = await readJson(msToken, env.ONEDRIVE_UPN, `${DATA_FOLDER}/processos.json`);
+
+    const result = (processos || [])
+      .filter(p => String(p.ClienteId) === payload.sub && !STATUS_FECHADOS.includes(p.Status))
+      .map(p => {
+        let dadosEsp = {};
+        try { dadosEsp = p.DadosEspecificosJSON ? JSON.parse(p.DadosEspecificosJSON) : {}; } catch(e) { dadosEsp = { _parseError: e.message, _raw: p.DadosEspecificosJSON }; }
+        return { tipo: p.TipoProcesso, status: p.Status, dadosEsp };
+      });
+
+    return jsonResp({ processos: result }, 200, cors);
   } catch (e) {
     return jsonResp({ error: e.message }, 500, cors);
   }
@@ -394,7 +423,8 @@ export default {
     if (pathname === '/auth'  && request.method === 'POST') return handleAuth(request, env, cors);
     if (pathname === '/dados' && request.method === 'GET')  return handleDados(request, env, cors);
     if (pathname === '/files' && request.method === 'GET')  return handleFiles(request, env, cors);
-    if (pathname === '/debug' && request.method === 'GET')  return handleDebug(request, env, cors);
+    if (pathname === '/debug'           && request.method === 'GET') return handleDebug(request, env, cors);
+    if (pathname === '/debug-processos' && request.method === 'GET') return handleDebugProcessos(request, env, cors);
 
     return jsonResp({ error: 'Rota não encontrada' }, 404, cors);
   },
