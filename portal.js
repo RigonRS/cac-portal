@@ -104,11 +104,12 @@ function infoProcesso(p) {
     if (d.arma)       linhas.push(esc(d.arma));
   } else if (tipo === 'Alteração de Endereço') {
     const end = [d.endLogradouro, d.endNumero, d.endCidade, d.endUF].filter(Boolean);
-    if (end.length) linhas.push(end.map(esc).join(', '));
+    if (end.length) linhas.push('Novo Endereço: ' + end.map(esc).join(', '));
   } else if (tipo === 'Inclusão de Atividade' || tipo === 'Exclusão de Atividade') {
     if (d.atividade) linhas.push(esc(d.atividade));
+  } else if (/transfer[eê]ncia|aquisi[çc][ãa]o/i.test(tipo)) {
+    if (d.arma) linhas.push(esc(d.arma));
   } else {
-    // Transferências, Aquisição, Mudança de Acervo, Renovação/2ª via de CRAF
     if (d.arma) linhas.push(esc(d.arma));
   }
 
