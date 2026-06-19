@@ -236,13 +236,18 @@ async function handleDados(request, env, cors) {
       .map(p => {
         let dadosEsp = {};
         try { dadosEsp = p.DadosEspecificosJSON ? JSON.parse(p.DadosEspecificosJSON) : {}; } catch {}
-        // Extrai marca/modelo do campo armaId (formato: "id|atividade|marca|modelo")
-        const armaDesc = (() => {
-          const v = dadosEsp.armaId || '';
+        // Extrai marca/modelo de campos de arma (formato: "id|atividade|marca|modelo")
+        const parseArmaId = v => {
+          if (!v) return null;
           const parts = v.split('|');
           if (parts.length >= 4) return [parts[2], parts[3]].filter(Boolean).join(' ');
+          if (parts.length === 3) return [parts[1], parts[2]].filter(Boolean).join(' ');
           return null;
-        })();
+        };
+        const armaDesc = parseArmaId(dadosEsp.armaId)
+          || parseArmaId(dadosEsp.armaIdMesmoTitular)
+          || parseArmaId(dadosEsp.armaIdVendedor)
+          || null;
         return {
           tipo:   p.TipoProcesso,
           status: p.Status,
