@@ -55,7 +55,7 @@ body {
 }
 
 .login-logo img {
-  height: 56px;
+  height: 112px;
   object-fit: contain;
 }
 
@@ -250,6 +250,7 @@ body {
 .icon-green  { background: var(--green-bg); color: var(--green); }
 .icon-purple { background: #f5f3ff; color: #7c3aed; }
 .icon-red    { background: #fee2e2; color: #dc2626; }
+.icon-armas  { background: #6068D6; display: flex; align-items: center; justify-content: center; }
 
 .section-body { padding: 6px 0; }
 
