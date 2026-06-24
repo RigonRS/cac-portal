@@ -10,12 +10,12 @@
 <body>
 
 <div class="login-wrapper">
-  <div class="login-card">
 
-    <div class="login-logo">
-      <img src="logo-pr.png" alt="Logo" onerror="this.style.display='none'" />
-      <div class="escritorio">P&amp;R Despachante Bélico</div>
-    </div>
+  <div class="logo-card">
+    <img src="logo-pr-dourado.png" alt="P&amp;R Despachante Bélico" onerror="this.style.display='none'" />
+  </div>
+
+  <div class="login-card">
 
     <h1>Portal CAC</h1>
     <p class="subtitle">Acesse seus documentos e acompanhe seus processos</p>
@@ -108,7 +108,7 @@
 
       sessionStorage.setItem('cac_token', data.token);
       sessionStorage.setItem('cac_nome',  data.nome);
-      window.location.href = 'portal.html';
+      mostrarBoasVindas(data.nome);
 
     } catch (err) {
       erro.textContent = 'Não foi possível conectar ao servidor. Tente novamente em instantes.';
@@ -124,7 +124,39 @@
   if (sessionStorage.getItem('cac_token')) {
     window.location.href = 'portal.html';
   }
+
+  function mostrarBoasVindas(nome) {
+    const primeiroNome = (nome || '').split(' ')[0];
+    document.getElementById('bv-nome').textContent = primeiroNome + ',';
+    document.getElementById('modal-bv').style.display = 'flex';
+  }
+
+  function fecharBoasVindas() {
+    document.getElementById('modal-bv').style.display = 'none';
+    window.location.href = 'portal.html';
+  }
 </script>
+
+<!-- MODAL BOAS-VINDAS -->
+<div id="modal-bv" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:999;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:14px;padding:36px 32px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center">
+    <div style="font-size:36px;margin-bottom:12px">👋</div>
+    <p style="font-size:18px;font-weight:700;color:#1e293b;margin:0 0 16px"><span id="bv-nome"></span></p>
+    <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 12px;text-align:left">
+      Seja bem-vindo ao <strong>Portal do Cliente da P&amp;R Despachante Bélico</strong>.
+    </p>
+    <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 12px;text-align:left">
+      Aqui você encontrará todos os documentos que possuímos em nossa base de dados disponíveis para download, basta clicar no ícone em azul ao lado do documento desejado.
+    </p>
+    <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 12px;text-align:left">
+      Dispomos de um sistema onde é possível acompanhar o andamento dos seus processos junto ao escritório e também conferir as informações do seu acervo de armas.
+    </p>
+    <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 24px;text-align:left">
+      Qualquer dúvida ou informação divergente, favor entrar em contato conosco pelo WhatsApp <strong>(54) 9613-1445</strong>.
+    </p>
+    <button onclick="fecharBoasVindas()" style="background:#1d4ed8;color:#fff;border:none;border-radius:8px;padding:12px 32px;font-size:15px;font-weight:600;cursor:pointer;width:100%">Acessar o Portal</button>
+  </div>
+</div>
 
 </body>
 </html>
