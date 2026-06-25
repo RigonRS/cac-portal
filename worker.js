@@ -70,6 +70,16 @@ async function readJson(msToken, upn, path) {
   return res.json();
 }
 
+// ---- ONEDRIVE: gravar arquivo JSON ----
+async function writeJson(msToken, upn, path, data) {
+  const url = `${GRAPH}/users/${encodeURIComponent(upn)}/drive/root:/${path}:/content`;
+  await fetch(url, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${msToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+}
+
 // ---- ONEDRIVE: listar arquivos de uma pasta (user drive) ----
 async function listFolder(msToken, upn, folderPath) {
   const encoded = folderPath.split('/').map(p => encodeURIComponent(p)).join('/');
@@ -184,6 +194,19 @@ async function handleAuth(request, env, cors) {
       { sub: String(cliente.id), nome: cliente.Title, exp: Date.now() + TOKEN_TTL },
       env.WORKER_SECRET
     );
+
+    // Registrar acesso ao portal
+    try {
+      const agora = new Date();
+      const acessos = (await readJson(msToken, env.ONEDRIVE_UPN, `${DATA_FOLDER}/acessos_portal.json`)) || [];
+      acessos.push({
+        nome: cliente.Title,
+        cpf:  cpf,
+        data: agora.toLocaleDateString('pt-BR'),
+        hora: agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+      });
+      await writeJson(msToken, env.ONEDRIVE_UPN, `${DATA_FOLDER}/acessos_portal.json`, acessos);
+    } catch(_) {}
 
     return jsonResp({ token, nome: cliente.Title }, 200, cors);
   } catch (e) {
