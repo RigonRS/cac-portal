@@ -71,13 +71,18 @@ async function readJson(msToken, upn, path) {
 }
 
 // ---- ONEDRIVE: gravar arquivo JSON ----
+// Requer permissão Files.ReadWrite.All no app Azure AD
 async function writeJson(msToken, upn, path, data) {
   const url = `${GRAPH}/users/${encodeURIComponent(upn)}/drive/root:/${path}:/content`;
-  await fetch(url, {
+  const res = await fetch(url, {
     method: 'PUT',
     headers: { Authorization: `Bearer ${msToken}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
+  if (!res.ok) {
+    const err = await res.text().catch(() => '');
+    throw new Error(`writeJson HTTP ${res.status}: ${err}`);
+  }
 }
 
 // ---- ONEDRIVE: listar arquivos de uma pasta (user drive) ----
@@ -196,6 +201,7 @@ async function handleAuth(request, env, cors) {
     );
 
     // Registrar acesso ao portal
+    let logError = null;
     try {
       const agora = new Date();
       const acessos = (await readJson(msToken, env.ONEDRIVE_UPN, `${DATA_FOLDER}/acessos_portal.json`)) || [];
@@ -206,9 +212,9 @@ async function handleAuth(request, env, cors) {
         hora: agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
       });
       await writeJson(msToken, env.ONEDRIVE_UPN, `${DATA_FOLDER}/acessos_portal.json`, acessos);
-    } catch(_) {}
+    } catch(e) { logError = e.message; }
 
-    return jsonResp({ token, nome: cliente.Title }, 200, cors);
+    return jsonResp({ token, nome: cliente.Title, ...(logError ? { _logError: logError } : {}) }, 200, cors);
   } catch (e) {
     return jsonResp({ error: e.message }, 500, cors);
   }
