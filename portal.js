@@ -159,8 +159,9 @@ function renderValidades(validades) {
     <div class="validade-item">
       <span class="validade-label">
         ${esc(v.label)}
-        ${v.arma  ? `<span class="validade-detalhe">${esc(v.arma)}</span>`  : ''}
-        ${v.local ? `<span class="validade-detalhe">${esc(v.local)}</span>` : ''}
+        ${v.arma     ? `<span class="validade-detalhe">${esc(v.arma)}</span>`     : ''}
+        ${v.tipoGuia ? `<span class="validade-detalhe">${esc(v.tipoGuia)}</span>` : ''}
+        ${v.local    ? `<span class="validade-detalhe">${esc(v.local)}</span>`    : ''}
       </span>
       <div class="validade-right">
         <span class="validade-data">${fmtDate(v.data)}</span>

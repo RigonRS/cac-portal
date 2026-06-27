@@ -256,15 +256,24 @@ async function handleDados(request, env, cors) {
     addValidade('Avaliação Psicológica', cliente.ValidadeAvaliPsi);
     addValidade('Teste de Tiro', cliente.ValidadeTesteTiro);
 
+    // Índice de armas para lookup sem número de série
+    const armasMap = {};
+    (armas || []).forEach(a => { armasMap[String(a.id)] = a; });
+
     // Validades de documentos (CRAF, Guia de Tráfego) com info de arma/local
     (documentos || [])
       .filter(d => String(d.ClienteId) === payload.sub && d.DataValidade)
       .forEach(d => {
         const extra = {};
         if (d.TipoDocumento === 'CRAF' || d.TipoDocumento === 'Guia de Tráfego') {
-          if (d.ArmaVinculadaDesc) extra.arma = d.ArmaVinculadaDesc;
+          const arm = d.ArmaVinculadaId ? armasMap[String(d.ArmaVinculadaId)] : null;
+          const armaDesc = arm
+            ? [arm.Marca, arm.Modelo].filter(Boolean).join(' ')
+            : null;
+          if (armaDesc) extra.arma = armaDesc;
         }
         if (d.TipoDocumento === 'Guia de Tráfego') {
+          if (d.TipoGuia) extra.tipoGuia = d.TipoGuia;
           const loc = d.CidadeGuia
             ? d.CidadeGuia + (d.UFGuia ? '/' + d.UFGuia : '')
             : (d.NomeClubeTiro || '');
@@ -279,7 +288,9 @@ async function handleDados(request, env, cors) {
       simafList.forEach(s => {
         if (s.DataValidade) {
           const lbl = 'SIMAF' + (s.NomePropriedade ? ` — ${s.NomePropriedade}` : '');
-          addValidade(lbl, s.DataValidade);
+          const extra = {};
+          if (s.CidadeSimaf) extra.local = s.CidadeSimaf + (s.UFSimaf ? '/' + s.UFSimaf : '');
+          addValidade(lbl, s.DataValidade, extra);
         }
       });
     } catch(e) {}
