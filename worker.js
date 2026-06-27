@@ -17,7 +17,7 @@ const DATA_FOLDER = 'cac-gestao-dados';
 const DOCS_SITE   = 'simonebpegoraro.sharepoint.com:/sites/SimonePegoraro';
 const DOCS_PATH   = 'PRISCILA E MATHEUS/CR\'S';
 const TOKEN_TTL   = 60 * 60 * 1000; // 1 hora em ms
-const STATUS_FECHADOS = ['Deferido', 'Indeferido', 'Arquivado'];
+const STATUS_VISIVEIS = ['Aguardando Documentos', 'Aguardando Pagamento GRU', 'Pronto para Análise', 'Em Análise', 'Aguardando Assinatura', 'Aguardando Protocolo (email)'];
 
 // ---- CORS ----
 function corsHeaders(env, request) {
@@ -204,12 +204,13 @@ async function handleAuth(request, env, cors) {
     let logError = null;
     try {
       const agora = new Date();
+      const tz = { timeZone: 'America/Sao_Paulo' };
       const acessos = (await readJson(msToken, env.ONEDRIVE_UPN, `${DATA_FOLDER}/acessos_portal.json`)) || [];
       acessos.push({
         nome: cliente.Title,
         cpf:  cpf,
-        data: agora.toLocaleDateString('pt-BR'),
-        hora: agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        data: agora.toLocaleDateString('pt-BR', tz),
+        hora: agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', ...tz }),
       });
       await writeJson(msToken, env.ONEDRIVE_UPN, `${DATA_FOLDER}/acessos_portal.json`, acessos);
     } catch(e) { logError = e.message; }
@@ -242,26 +243,49 @@ async function handleDados(request, env, cors) {
     const cliente = (clientes || []).find(c => String(c.id) === payload.sub) || {};
 
     const validades = [];
-    const addValidade = (label, iso) => {
+    const addValidade = (label, iso, extra = {}) => {
       if (!iso) return;
       const data = iso.split('T')[0];
       const hoje = new Date(); hoje.setHours(0,0,0,0);
       const venc = new Date(data + 'T00:00:00');
       const dias = Math.floor((venc.getTime() - hoje.getTime()) / 86400000);
-      validades.push({ label, data, dias });
+      validades.push({ label, data, dias, ...extra });
     };
     addValidade('CR', cliente.DataValidadeCR);
     addValidade('CTF', cliente.DataValidadeCTF);
     addValidade('Avaliação Psicológica', cliente.ValidadeAvaliPsi);
     addValidade('Teste de Tiro', cliente.ValidadeTesteTiro);
 
-    // Validades de documentos (CRAF, Guia)
+    // Validades de documentos (CRAF, Guia de Tráfego) com info de arma/local
     (documentos || [])
       .filter(d => String(d.ClienteId) === payload.sub && d.DataValidade)
-      .forEach(d => addValidade(d.TipoDocumento, d.DataValidade));
+      .forEach(d => {
+        const extra = {};
+        if (d.TipoDocumento === 'CRAF' || d.TipoDocumento === 'Guia de Tráfego') {
+          if (d.ArmaVinculadaDesc) extra.arma = d.ArmaVinculadaDesc;
+        }
+        if (d.TipoDocumento === 'Guia de Tráfego') {
+          const loc = d.CidadeGuia
+            ? d.CidadeGuia + (d.UFGuia ? '/' + d.UFGuia : '')
+            : (d.NomeClubeTiro || '');
+          if (loc) extra.local = loc;
+        }
+        addValidade(d.TipoDocumento, d.DataValidade, extra);
+      });
+
+    // Validades de SIMAF
+    try {
+      const simafList = JSON.parse(cliente.SIMAFs || '[]');
+      simafList.forEach(s => {
+        if (s.DataValidade) {
+          const lbl = 'SIMAF' + (s.NomePropriedade ? ` — ${s.NomePropriedade}` : '');
+          addValidade(lbl, s.DataValidade);
+        }
+      });
+    } catch(e) {}
 
     const processosAtivos = (processos || [])
-      .filter(p => String(p.ClienteId) === payload.sub && !STATUS_FECHADOS.includes(p.Status))
+      .filter(p => String(p.ClienteId) === payload.sub && STATUS_VISIVEIS.includes(p.Status))
       .map(p => {
         let dadosEsp = {};
         try { dadosEsp = p.DadosEspecificosJSON ? JSON.parse(p.DadosEspecificosJSON) : {}; } catch {}
@@ -366,7 +390,7 @@ async function handleDebugProcessos(request, env, cors) {
     const processos = await readJson(msToken, env.ONEDRIVE_UPN, `${DATA_FOLDER}/processos.json`);
 
     const result = (processos || [])
-      .filter(p => String(p.ClienteId) === payload.sub && !STATUS_FECHADOS.includes(p.Status))
+      .filter(p => String(p.ClienteId) === payload.sub && STATUS_VISIVEIS.includes(p.Status))
       .map(p => {
         let dadosEsp = {};
         try { dadosEsp = p.DadosEspecificosJSON ? JSON.parse(p.DadosEspecificosJSON) : {}; } catch(e) { dadosEsp = { _parseError: e.message, _raw: p.DadosEspecificosJSON }; }

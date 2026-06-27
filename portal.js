@@ -50,8 +50,12 @@ function statusBadge(s) {
   const m = {
     'Aguardando Pagamento Cliente': 'badge-orange',
     'Aguardando Documentos':        'badge-yellow',
+    'Aguardando Pagamento GRU':     'badge-yellow',
     'Pronto para Análise':          'badge-blue',
+    'Em Análise':                   'badge-blue',
     'Em análise':                   'badge-blue',
+    'Aguardando Assinatura':        'badge-orange',
+    'Aguardando Protocolo (email)': 'badge-purple',
     'Parado':                       'badge-gray',
     'Processo Futuro':              'badge-purple',
     'Deferido':                     'badge-green',
@@ -153,7 +157,11 @@ function renderValidades(validades) {
   }
   el.innerHTML = validades.map(v => `
     <div class="validade-item">
-      <span class="validade-label">${esc(v.label)}</span>
+      <span class="validade-label">
+        ${esc(v.label)}
+        ${v.arma  ? `<span class="validade-detalhe">${esc(v.arma)}</span>`  : ''}
+        ${v.local ? `<span class="validade-detalhe">${esc(v.local)}</span>` : ''}
+      </span>
       <div class="validade-right">
         <span class="validade-data">${fmtDate(v.data)}</span>
         ${validadeBadge(v.dias)}
