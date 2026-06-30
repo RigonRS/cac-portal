@@ -155,6 +155,7 @@ body {
   font-size: 13px;
   margin-top: 14px;
   display: none;
+  white-space: pre-line;
 }
 
 .error-msg.show { display: block; }

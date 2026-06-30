@@ -195,6 +195,15 @@ async function handleAuth(request, env, cors) {
 
     if (!cliente) return jsonResp({ error: 'Dados não conferem. Verifique o CPF e a data de nascimento.' }, 401, cors);
 
+    // Bloqueio de acesso (cliente inativado ou portal bloqueado manualmente)
+    const ate = cliente.PortalBloqueadoAte;
+    const bloqueioExpirado = ate && new Date(ate + 'T23:59:59') < new Date();
+    const bloqueado = cliente.Inativo === 'sim' || (cliente.PortalBloqueado === 'sim' && !bloqueioExpirado);
+    if (bloqueado) {
+      const msg = `Olá ${cliente.Title}.\nO seu acesso ao Portal da PR Despachante Belico está temporariamente indisponível, para mais informações favor nos contatar via whatsapp (54) 99613-1445.\nAtenciosamente Simone Pegoraro & Matheus Rigon`;
+      return jsonResp({ error: msg }, 403, cors);
+    }
+
     const token = await signToken(
       { sub: String(cliente.id), nome: cliente.Title, exp: Date.now() + TOKEN_TTL },
       env.WORKER_SECRET
