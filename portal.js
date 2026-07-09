@@ -74,6 +74,17 @@ function validadeBadge(dias) {
 }
 
 // ---- RENDERIZAR ARQUIVOS ----
+async function baixarArquivo(nome, url) {
+  window.open(url, '_blank');
+  try {
+    await fetch(`${WORKER_URL}/log-download`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, arquivo: nome }),
+    });
+  } catch(e) {}
+}
+
 function renderArquivos(files) {
   const el = document.getElementById('secao-arquivos');
   if (!files || files.length === 0) {
@@ -88,7 +99,7 @@ function renderArquivos(files) {
         <div class="file-meta">${fmtSize(f.size)}${f.modified ? ' · ' + fmtDate(f.modified) : ''}</div>
       </div>
       ${f.downloadUrl
-        ? `<a class="btn-baixar" href="${esc(f.downloadUrl)}" target="_blank" download>⬇ Baixar</a>`
+        ? `<button class="btn-baixar" onclick="baixarArquivo(${JSON.stringify(f.name)}, ${JSON.stringify(f.downloadUrl)})">⬇ Baixar</button>`
         : `<span style="font-size:12px;color:var(--muted)">Indisponível</span>`
       }
     </div>

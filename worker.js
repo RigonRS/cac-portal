@@ -395,6 +395,37 @@ async function handleFiles(request, env, cors) {
   }
 }
 
+// ---- ENDPOINT: POST /log-download ----
+async function handleLogDownload(request, env, cors) {
+  let body;
+  try { body = await request.json(); } catch { return jsonResp({ error: 'Requisição inválida' }, 400, cors); }
+
+  const { token, arquivo } = body;
+  if (!token) return jsonResp({ error: 'Token não fornecido' }, 401, cors);
+
+  let payload;
+  try { payload = await verifyToken(token, env.WORKER_SECRET); }
+  catch (e) { return jsonResp({ error: e.message }, 401, cors); }
+
+  try {
+    const msToken = await getMsToken(env);
+    const agora = new Date();
+    const tz = { timeZone: 'America/Sao_Paulo' };
+    const acessos = (await readJson(msToken, env.ONEDRIVE_UPN, `${DATA_FOLDER}/acessos_portal.json`)) || [];
+    acessos.push({
+      tipo:    'download',
+      arquivo: arquivo || '',
+      nome:    payload.nome,
+      data:    agora.toLocaleDateString('pt-BR', tz),
+      hora:    agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', ...tz }),
+    });
+    await writeJson(msToken, env.ONEDRIVE_UPN, `${DATA_FOLDER}/acessos_portal.json`, acessos);
+    return jsonResp({ ok: true }, 200, cors);
+  } catch (e) {
+    return jsonResp({ error: e.message }, 500, cors);
+  }
+}
+
 // ---- ENDPOINT: GET /debug-processos?token=xxx ----
 async function handleDebugProcessos(request, env, cors) {
   const url = new URL(request.url);
@@ -493,9 +524,10 @@ export default {
 
     const { pathname } = new URL(request.url);
 
-    if (pathname === '/auth'  && request.method === 'POST') return handleAuth(request, env, cors);
-    if (pathname === '/dados' && request.method === 'GET')  return handleDados(request, env, cors);
-    if (pathname === '/files' && request.method === 'GET')  return handleFiles(request, env, cors);
+    if (pathname === '/auth'         && request.method === 'POST') return handleAuth(request, env, cors);
+    if (pathname === '/dados'        && request.method === 'GET')  return handleDados(request, env, cors);
+    if (pathname === '/files'        && request.method === 'GET')  return handleFiles(request, env, cors);
+    if (pathname === '/log-download' && request.method === 'POST') return handleLogDownload(request, env, cors);
     if (pathname === '/debug'           && request.method === 'GET') return handleDebug(request, env, cors);
     if (pathname === '/debug-processos' && request.method === 'GET') return handleDebugProcessos(request, env, cors);
 
