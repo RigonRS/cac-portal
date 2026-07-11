@@ -99,7 +99,7 @@ function renderArquivos(files) {
         <div class="file-meta">${fmtSize(f.size)}${f.modified ? ' · ' + fmtDate(f.modified) : ''}</div>
       </div>
       ${f.downloadUrl
-        ? `<button class="btn-baixar" onclick="baixarArquivo(${JSON.stringify(f.name)}, ${JSON.stringify(f.downloadUrl)})">⬇ Baixar</button>`
+        ? `<button class="btn-baixar" data-nome="${esc(f.name)}" data-url="${esc(f.downloadUrl)}" onclick="baixarArquivo(this.dataset.nome, this.dataset.url)">⬇ Baixar</button>`
         : `<span style="font-size:12px;color:var(--muted)">Indisponível</span>`
       }
     </div>
