@@ -15,7 +15,7 @@
 const GRAPH = 'https://graph.microsoft.com/v1.0';
 const DATA_FOLDER = 'cac-gestao-dados';
 const DOCS_SITE   = 'simonebpegoraro.sharepoint.com:/sites/SimonePegoraro';
-const DOCS_PATH   = 'PRISCILA E MATHEUS/CR\'S';
+const DOCS_PATH   = 'PRISCILA, ANDRIELI E MATHEUS/CR\'S';
 const TOKEN_TTL   = 60 * 60 * 1000; // 1 hora em ms
 const STATUS_VISIVEIS = ['Aguardando Documentos', 'Aguardando Pagamento GRU', 'Pronto para Análise', 'Em Análise', 'Aguardando Assinatura', 'Aguardando Protocolo (email)'];
 
@@ -495,16 +495,16 @@ async function handleDebug(request, env, cors) {
     const siteRoot = siteRootRes.ok ? { status: 200, items: (await siteRootRes.json()).value?.map(i => ({ name: i.name, type: i.folder ? 'pasta' : 'arquivo' })) } : { status: siteRootRes.status, error: await siteRootRes.text() };
 
     const [r1, r2, r3] = await Promise.all([
-      listSite('PRISCILA E MATHEUS'),
-      listSite('PRISCILA E MATHEUS/CR\'S'),
-      listSite('PRISCILA E MATHEUS/CR\'S/Matheus Silva Rigon/DOCUMENTOS PORTAL'),
+      listSite('PRISCILA, ANDRIELI E MATHEUS'),
+      listSite('PRISCILA, ANDRIELI E MATHEUS/CR\'S'),
+      listSite('PRISCILA, ANDRIELI E MATHEUS/CR\'S/Matheus Silva Rigon/DOCUMENTOS PORTAL'),
     ]);
 
     return jsonResp({
       dados_upn: upn,
       docs_site: DOCS_SITE,
       'raiz_site': siteRoot,
-      'PRISCILA E MATHEUS': r1,
+      'PRISCILA, ANDRIELI E MATHEUS': r1,
       'CR\'S': r2,
       'DOCUMENTOS PORTAL': r3,
     }, 200, cors);
