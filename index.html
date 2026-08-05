@@ -128,8 +128,24 @@
     }
   });
 
+  // Auto-login via parâmetros (acesso administrativo a partir do sistema de gestão)
+  const _autoParams = new URLSearchParams(window.location.search);
+  const _autoCpf = _autoParams.get('cpf');
+  const _autoNasc = _autoParams.get('nasc');
+  const _isAuto = _autoParams.get('auto') === '1' && _autoCpf && _autoNasc;
+  if (_isAuto) {
+    // Limpa sessão anterior para não abrir o portal de outro cliente
+    sessionStorage.removeItem('cac_token');
+    sessionStorage.removeItem('cac_nome');
+    document.getElementById('input-cpf').value = _autoCpf;
+    document.getElementById('input-nasc').value = _autoNasc;
+    // Remove os parâmetros da URL (não deixa credenciais visíveis no histórico)
+    history.replaceState(null, '', window.location.pathname);
+    document.getElementById('form-login').requestSubmit();
+  }
+
   // Redirecionar se já logado
-  if (sessionStorage.getItem('cac_token')) {
+  if (!_isAuto && sessionStorage.getItem('cac_token')) {
     window.location.href = 'portal.html';
   }
 
