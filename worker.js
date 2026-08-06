@@ -395,6 +395,37 @@ async function handleFiles(request, env, cors) {
   }
 }
 
+// ---- ENDPOINT: GET /download ----
+// Gera um link de download NOVO no momento do clique e redireciona para o arquivo.
+// Evita o erro "itemNotFound" que acontecia quando o link (pré-gerado na abertura
+// da lista) expirava — comum no celular, que suspende a página em segundo plano.
+async function handleDownload(request, env, cors) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get('token');
+  const nomeArquivo = url.searchParams.get('name');
+  if (!token) return jsonResp({ error: 'Token não fornecido' }, 401, cors);
+  if (!nomeArquivo) return jsonResp({ error: 'Arquivo não informado' }, 400, cors);
+
+  let payload;
+  try { payload = await verifyToken(token, env.WORKER_SECRET); }
+  catch (e) { return jsonResp({ error: e.message }, 401, cors); }
+
+  try {
+    const msToken = await getMsToken(env);
+    // A pasta vem SEMPRE do token verificado (não do input do cliente):
+    // garante que o cliente só baixa arquivos da própria pasta.
+    const folderPath = `${DOCS_PATH}/${payload.nome}/DOCUMENTOS PORTAL`;
+    const items = await listFolderSite(msToken, folderPath);
+    const alvo = items.find(f => f.name === nomeArquivo);
+    if (!alvo) return jsonResp({ error: 'Arquivo não encontrado' }, 404, cors);
+    const downloadUrl = await getDownloadUrlSite(msToken, alvo.id);
+    if (!downloadUrl) return jsonResp({ error: 'Não foi possível gerar o link de download' }, 500, cors);
+    return new Response(null, { status: 302, headers: { ...cors, Location: downloadUrl } });
+  } catch (e) {
+    return jsonResp({ error: e.message }, 500, cors);
+  }
+}
+
 // ---- ENDPOINT: POST /log-download ----
 async function handleLogDownload(request, env, cors) {
   let body;
@@ -527,6 +558,7 @@ export default {
     if (pathname === '/auth'         && request.method === 'POST') return handleAuth(request, env, cors);
     if (pathname === '/dados'        && request.method === 'GET')  return handleDados(request, env, cors);
     if (pathname === '/files'        && request.method === 'GET')  return handleFiles(request, env, cors);
+    if (pathname === '/download'     && request.method === 'GET')  return handleDownload(request, env, cors);
     if (pathname === '/log-download' && request.method === 'POST') return handleLogDownload(request, env, cors);
     if (pathname === '/debug'           && request.method === 'GET') return handleDebug(request, env, cors);
     if (pathname === '/debug-processos' && request.method === 'GET') return handleDebugProcessos(request, env, cors);

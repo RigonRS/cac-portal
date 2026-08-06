@@ -74,7 +74,9 @@ function validadeBadge(dias) {
 }
 
 // ---- RENDERIZAR ARQUIVOS ----
-async function baixarArquivo(nome, url) {
+async function baixarArquivo(nome) {
+  // Pede o link ao worker no momento do clique — assim ele é sempre novo e não expira.
+  const url = `${WORKER_URL}/download?token=${encodeURIComponent(token)}&name=${encodeURIComponent(nome)}`;
   window.open(url, '_blank');
   try {
     await fetch(`${WORKER_URL}/log-download`, {
@@ -99,7 +101,7 @@ function renderArquivos(files) {
         <div class="file-meta">${fmtSize(f.size)}${f.modified ? ' · ' + fmtDate(f.modified) : ''}</div>
       </div>
       ${f.downloadUrl
-        ? `<button class="btn-baixar" data-nome="${esc(f.name)}" data-url="${esc(f.downloadUrl)}" onclick="baixarArquivo(this.dataset.nome, this.dataset.url)">⬇ Baixar</button>`
+        ? `<button class="btn-baixar" data-nome="${esc(f.name)}" onclick="baixarArquivo(this.dataset.nome)">⬇ Baixar</button>`
         : `<span style="font-size:12px;color:var(--muted)">Indisponível</span>`
       }
     </div>
