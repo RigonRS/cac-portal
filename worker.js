@@ -111,18 +111,33 @@ async function getDocsSiteId(msToken) {
 }
 
 // ---- SHAREPOINT: listar arquivos de uma pasta no site ----
-async function listFolderSite(msToken, folderPath) {
+async function listFolderSiteRaw(msToken, folderPath) {
   const siteId = await getDocsSiteId(msToken);
   const encoded = folderPath.split('/').map(p => encodeURIComponent(p)).join('/');
   const url = `${GRAPH}/sites/${siteId}/drive/root:/${encoded}:/children?$select=name,size,lastModifiedDateTime,file,id`;
   const res = await fetch(url, { headers: { Authorization: `Bearer ${msToken}` } });
-  if (res.status === 404) return [];
+  if (res.status === 404) return null;   // pasta não encontrada nesta forma do nome
   if (!res.ok) {
     const body = await res.text();
     throw new Error(`Erro ao listar pasta no site (HTTP ${res.status}): ${body}`);
   }
   const data = await res.json();
   return (data.value || []).filter(i => i.file);
+}
+
+// Tenta o caminho como veio e também normalizado (NFC/NFD) — resolve nomes com acento,
+// que o SharePoint pode ter salvo numa forma diferente da que está no cadastro.
+async function listFolderSite(msToken, folderPath) {
+  const variantes = [folderPath, folderPath.normalize('NFC'), folderPath.normalize('NFD')];
+  const tentadas = new Set();
+  for (const fp of variantes) {
+    if (tentadas.has(fp)) continue;
+    tentadas.add(fp);
+    const items = await listFolderSiteRaw(msToken, fp);
+    if (items === null) continue;        // 404 nesta forma; tenta a próxima
+    if (items.length) return items;      // achou a pasta com arquivos
+  }
+  return [];                             // pasta vazia ou inexistente
 }
 
 // ---- SHAREPOINT: URL de download de um item ----
@@ -416,7 +431,7 @@ async function handleDownload(request, env, cors) {
     // garante que o cliente só baixa arquivos da própria pasta.
     const folderPath = `${DOCS_PATH}/${payload.nome}/DOCUMENTOS PORTAL`;
     const items = await listFolderSite(msToken, folderPath);
-    const alvo = items.find(f => f.name === nomeArquivo);
+    const alvo = items.find(f => f.name === nomeArquivo || f.name.normalize('NFC') === nomeArquivo.normalize('NFC'));
     if (!alvo) return jsonResp({ error: 'Arquivo não encontrado' }, 404, cors);
     const downloadUrl = await getDownloadUrlSite(msToken, alvo.id);
     if (!downloadUrl) return jsonResp({ error: 'Não foi possível gerar o link de download' }, 500, cors);
