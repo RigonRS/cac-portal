@@ -47,12 +47,13 @@
       </div>
 
       <div class="form-group">
-        <label for="input-nasc">Data de Nascimento</label>
-        <input
-          id="input-nasc"
-          type="date"
-          required
-        />
+        <label for="sel-dia">Data de Nascimento</label>
+        <div class="nasc-grupo">
+          <select id="sel-dia" aria-label="Dia" onchange="atualizarNasc()"><option value="">Dia</option></select>
+          <select id="sel-mes" aria-label="Mês" onchange="atualizarNasc()"><option value="">Mês</option></select>
+          <select id="sel-ano" aria-label="Ano" onchange="atualizarNasc()"><option value="">Ano</option></select>
+        </div>
+        <input type="hidden" id="input-nasc" />
       </div>
 
       <button type="submit" class="btn-primary" id="btn-entrar">
@@ -60,7 +61,7 @@
         <span id="btn-texto">Entrar</span>
       </button>
 
-      <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:10px">V1.31</div>
+      <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:10px">V1.32</div>
 
       <div class="error-msg" id="erro"></div>
     </form>
@@ -87,6 +88,27 @@
     this.value = fmtCPF(this.value);
   });
 
+  // ---- DATA DE NASCIMENTO por listas (Dia/Mês/Ano) ----
+  // Evita o calendário nativo, que trava em alguns aparelhos (ex.: Xiaomi/MIUI no Chrome).
+  (function preencherListasData() {
+    const selDia = document.getElementById('sel-dia');
+    const selMes = document.getElementById('sel-mes');
+    const selAno = document.getElementById('sel-ano');
+    const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    for (let d = 1; d <= 31; d++) selDia.insertAdjacentHTML('beforeend', `<option value="${String(d).padStart(2,'0')}">${d}</option>`);
+    meses.forEach((m, i) => selMes.insertAdjacentHTML('beforeend', `<option value="${String(i+1).padStart(2,'0')}">${m}</option>`));
+    const anoAtual = new Date().getFullYear();
+    for (let a = anoAtual; a >= 1920; a--) selAno.insertAdjacentHTML('beforeend', `<option value="${a}">${a}</option>`);
+  })();
+
+  // Monta a data no formato AAAA-MM-DD no campo oculto (mesmo formato de antes)
+  function atualizarNasc() {
+    const d = document.getElementById('sel-dia').value;
+    const m = document.getElementById('sel-mes').value;
+    const a = document.getElementById('sel-ano').value;
+    document.getElementById('input-nasc').value = (d && m && a) ? `${a}-${m}-${d}` : '';
+  }
+
   // ---- LOGIN ----
   document.getElementById('form-login').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -99,6 +121,13 @@
     const txt  = document.getElementById('btn-texto');
 
     erro.classList.remove('show');
+
+    if (!nasc) {
+      erro.textContent = 'Selecione o dia, o mês e o ano de nascimento.';
+      erro.classList.add('show');
+      return;
+    }
+
     btn.disabled = true;
     spin.classList.add('show');
     txt.textContent = 'Verificando...';
@@ -142,7 +171,15 @@
     sessionStorage.removeItem('cac_token');
     sessionStorage.removeItem('cac_nome');
     document.getElementById('input-cpf').value = _autoCpf;
-    document.getElementById('input-nasc').value = _autoNasc;
+    const _p = String(_autoNasc).split('-');
+    if (_p.length === 3) {
+      document.getElementById('sel-ano').value = _p[0];
+      document.getElementById('sel-mes').value = _p[1];
+      document.getElementById('sel-dia').value = _p[2];
+      atualizarNasc();
+    } else {
+      document.getElementById('input-nasc').value = _autoNasc;
+    }
     // Remove os parâmetros da URL (não deixa credenciais visíveis no histórico)
     history.replaceState(null, '', window.location.pathname);
     document.getElementById('form-login').requestSubmit();

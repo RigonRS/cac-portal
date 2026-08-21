@@ -127,6 +127,28 @@ body {
   box-shadow: 0 0 0 3px rgba(29,78,216,.12);
 }
 
+/* Data de nascimento por listas (Dia/Mês/Ano) — compatível com todos os aparelhos */
+.nasc-grupo { display: flex; gap: 8px; }
+.form-group select {
+  width: 100%;
+  padding: 10px 8px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 15px;
+  color: var(--text);
+  background: #fff;
+  outline: none;
+  transition: border-color .15s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.nasc-grupo select:nth-child(1) { flex: 0 0 74px; }
+.nasc-grupo select { flex: 1; min-width: 0; }
+.form-group select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(29,78,216,.12);
+}
+
 .btn-primary {
   width: 100%;
   padding: 12px;
