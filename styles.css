@@ -193,8 +193,9 @@ body {
 .spinner.show { display: inline-block; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ---- FUNDO DA PÁGINA DO PORTAL ---- */
-body.portal-body { background: #528EE3; }
+/* ---- FUNDO DA PÁGINA (portal e login) ---- */
+body.portal-body,
+body.login-body { background: #528EE3; }
 
 /* ---- PORTAL HEADER ---- */
 .portal-header {
