@@ -257,11 +257,12 @@ async function handleDados(request, env, cors) {
 
   try {
     const msToken = await getMsToken(env);
-    const [clientes, processos, documentos, armas] = await Promise.all([
+    const [clientes, processos, documentos, armas, infoPortal] = await Promise.all([
       readJson(msToken, env.ONEDRIVE_UPN, `${DATA_FOLDER}/clientes.json`),
       readJson(msToken, env.ONEDRIVE_UPN, `${DATA_FOLDER}/processos.json`),
       readJson(msToken, env.ONEDRIVE_UPN, `${DATA_FOLDER}/documentos.json`),
       readJson(msToken, env.ONEDRIVE_UPN, `${DATA_FOLDER}/armas.json`),
+      readJson(msToken, env.ONEDRIVE_UPN, `${DATA_FOLDER}/informacoes_portal.json`),
     ]);
 
     const cliente = (clientes || []).find(c => String(c.id) === payload.sub) || {};
@@ -372,7 +373,12 @@ async function handleDados(request, env, cors) {
         sinarm:     a.NumeroSINARM || null,
       }));
 
-    return jsonResp({ validades, processos: processosAtivos, armas: acervoArmas, categorias }, 200, cors);
+    // Informações importantes (mesmas para todos os clientes; editadas no Gestão)
+    const informacoes = (Array.isArray(infoPortal) ? infoPortal : [])
+      .filter(c => c && (c.titulo || c.conteudo))
+      .map(c => ({ titulo: c.titulo || '', conteudo: c.conteudo || '' }));
+
+    return jsonResp({ validades, processos: processosAtivos, armas: acervoArmas, categorias, informacoes }, 200, cors);
   } catch (e) {
     return jsonResp({ error: e.message }, 500, cors);
   }

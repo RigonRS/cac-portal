@@ -8,7 +8,7 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <title>Portal do Cliente — P&amp;R Despachante Bélico</title>
-  <link rel="stylesheet" href="styles.css?v=1.31" />
+  <link rel="stylesheet" href="styles.css?v=1.33" />
   <link rel="icon" href="favicon.png" type="image/png" />
 </head>
 <body>
@@ -28,57 +28,14 @@
 <!-- CONTEÚDO -->
 <main class="portal-main">
 
-  <!-- DOCUMENTOS -->
-  <div class="section">
-    <div class="section-header">
-      <div class="icon icon-blue">📄</div>
-      <h2>Documentos disponíveis</h2>
-    </div>
-    <div class="section-body" id="secao-arquivos">
-      <div class="skeleton" style="width:60%"></div>
-      <div class="skeleton" style="width:80%"></div>
-      <div class="skeleton" style="width:50%"></div>
-    </div>
-  </div>
+  <!-- MENU DE BOTÕES (aparece após login) -->
+  <div id="portal-menu" class="portal-menu"></div>
 
-  <!-- PROCESSOS -->
-  <div class="section">
-    <div class="section-header">
-      <div class="icon icon-purple">📋</div>
-      <h2>Processos em andamento</h2>
-    </div>
-    <div class="section-body" id="secao-processos">
-      <div class="skeleton" style="width:70%"></div>
-      <div class="skeleton" style="width:55%"></div>
-    </div>
-  </div>
-
-  <!-- VALIDADES -->
-  <div class="section">
-    <div class="section-header">
-      <div class="icon icon-green">📅</div>
-      <h2>Validade dos documentos</h2>
-    </div>
-    <div class="section-body" id="secao-validades">
-      <div class="skeleton" style="width:65%"></div>
-      <div class="skeleton" style="width:75%"></div>
-    </div>
-  </div>
-
-  <!-- ACERVO DE ARMAS -->
-  <div class="section">
-    <div class="section-header">
-      <div class="icon icon-armas"><img src="logo-pistola.png" alt="armas" style="width:20px;height:20px;object-fit:contain" /></div>
-      <h2>Acervo de armas</h2>
-    </div>
-    <div class="section-body" id="secao-armas">
-      <div class="skeleton" style="width:70%"></div>
-      <div class="skeleton" style="width:55%"></div>
-    </div>
-  </div>
+  <!-- VISUALIZAÇÃO DA SEÇÃO SELECIONADA -->
+  <div id="portal-view" style="display:none"></div>
 
 </main>
 
-<script src="portal.js?v=1.31"></script>
+<script src="portal.js?v=1.33"></script>
 </body>
 </html>
