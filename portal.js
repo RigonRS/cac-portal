@@ -95,24 +95,24 @@ function armaSvg(especie) {
   if (e.includes('revolver')) f = 'revolver';
   else if (e.includes('espingarda')) f = 'espingarda';
   else if (e.includes('carabina') || e.includes('fuzil')) f = 'carabina';
-  return `<img src="${IMG}${f}.png" alt="${esc(especie || 'Arma')}" class="ico-arma" onerror="this.style.display='none'">`;
+  return `<img src="${IMG}${f}.png?v=137" alt="${esc(especie || 'Arma')}" class="ico-arma" onerror="this.style.display='none'">`;
 }
 
 // ---- ÍCONES DAS SEÇÕES (imagens) ----
 const ICONS = {
-  documentos:  `<img src="${IMG}documentos.png" alt="" class="ico-img" onerror="this.style.display='none'">`,
-  processos:   `<img src="${IMG}processos.png" alt="" class="ico-img" onerror="this.style.display='none'">`,
-  validades:   `<img src="${IMG}validades.png" alt="" class="ico-img" onerror="this.style.display='none'">`,
-  armas:       `<img src="${IMG}acervo.png" alt="" class="ico-img" onerror="this.style.display='none'">`,
-  informacoes: `<img src="${IMG}informacoes.png" alt="" class="ico-img" onerror="this.style.display='none'">`,
+  documentos:  `<img src="${IMG}documentos.png?v=137" alt="" class="ico-img" onerror="this.style.display='none'">`,
+  processos:   `<img src="${IMG}processos.png?v=137" alt="" class="ico-img" onerror="this.style.display='none'">`,
+  validades:   `<img src="${IMG}validades.png?v=137" alt="" class="ico-img" onerror="this.style.display='none'">`,
+  armas:       `<img src="${IMG}acervo.png?v=137" alt="" class="ico-img" onerror="this.style.display='none'">`,
+  informacoes: `<img src="${IMG}informacoes.png?v=137" alt="" class="ico-img" onerror="this.style.display='none'">`,
 };
 
 // ---- ÍCONES DOS TIPOS DE ACERVO (imagens) ----
 const ACERVO_ICONS = {
-  atirador: `<img src="${IMG}atirador.png" alt="" class="ico-ac" onerror="this.style.display='none'">`,
-  cacador:  `<img src="${IMG}cacador.png" alt="" class="ico-ac" onerror="this.style.display='none'">`,
-  defesa:   `<img src="${IMG}defesa.png" alt="" class="ico-ac" onerror="this.style.display='none'">`,
-  outro:    `<img src="${IMG}pistola.png" alt="" class="ico-ac" onerror="this.style.display='none'">`,
+  atirador: `<img src="${IMG}atirador.png?v=137" alt="" class="ico-ac" onerror="this.style.display='none'">`,
+  cacador:  `<img src="${IMG}cacador.png?v=137" alt="" class="ico-ac" onerror="this.style.display='none'">`,
+  defesa:   `<img src="${IMG}defesa.png?v=137" alt="" class="ico-ac" onerror="this.style.display='none'">`,
+  outro:    `<img src="${IMG}pistola.png?v=137" alt="" class="ico-ac" onerror="this.style.display='none'">`,
 };
 
 // ---- NAVEGAÇÃO ENTRE MENU E SEÇÕES ----
