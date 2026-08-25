@@ -85,46 +85,34 @@ function semAcento(s) {
   return String(s || '').normalize('NFD').replace(new RegExp('[\\u0300-\\u036f]', 'g'), '').toLowerCase();
 }
 
-// ---- MINIATURA POR TIPO DE ARMA (silhuetas realistas) ----
-// Silhuetas em SVG por espécie (revólver, pistola, espingarda, carabina/fuzil).
+// Pasta com os ícones (imagens fornecidas)
+const IMG = 'icones/';
+
+// ---- MINIATURA POR TIPO DE ARMA (imagens) ----
 function armaSvg(especie) {
   const e = semAcento(especie);
-  const wrap = (inner) => `<svg viewBox="0 0 34 20" width="38" height="22" fill="currentColor" aria-hidden="true">${inner}</svg>`;
-  if (e.includes('revolver')) {
-    // Cano curto + tambor (círculo) + coronha curva + guarda-mato
-    return wrap(`<path d="M14 7h12v2.4H14z"/><rect x="24.4" y="5.7" width="1.5" height="1.5"/><path d="M6 8h10v3.6H6z"/><circle cx="11" cy="9.9" r="3.5"/><circle cx="11" cy="9.9" r="1" fill="#528EE3"/><path d="M9 11.6a2.7 2.7 0 0 0 2.7 2.5h.8v-1.6h-.8a1.1 1.1 0 0 1-1.1-1z"/><path d="M6 8.6c-2 1-3.1 3.1-3.1 6.1l3 .5c.3-2.6 1.1-4.4 2.6-5.4z"/>`);
-  }
-  if (e.includes('espingarda')) {
-    // Cano duplo longo + bomba + coronha reta
-    return wrap(`<path d="M2 7.3h26v1.5H2z"/><path d="M2 8.8h26v1.5H2z"/><rect x="27.4" y="7.1" width="1.7" height="3.4" rx=".4"/><rect x="6" y="6.9" width="6" height="4.4" rx=".6"/><path d="M8 11.3a2 2 0 0 0 2 1.9v-1.5a.7.7 0 0 1-.7-.4z"/><path d="M6 8l-4.2 5.2H5.4l3.1-4z"/>`);
-  }
-  if (e.includes('carabina') || e.includes('fuzil')) {
-    // Cano longo + luneta + carregador curvo + empunhadura + coronha
-    return wrap(`<path d="M4 8h27v1.7H4z"/><rect x="30.4" y="7.3" width="1.5" height="2.8" rx=".3"/><rect x="6" y="7" width="10" height="3.4" rx=".5"/><rect x="9" y="4.8" width="6" height="1.9" rx=".9"/><path d="M12 10.4c.3 2 .6 3.6 1.2 5.1l2.3-.6c-.5-1.5-.8-3-.9-4.5z"/><path d="M8 10.4l-1.1 3.4h2.3l1-3.4z"/><path d="M6 8.4l-4.2 1.5v2.1L6 12.8z"/>`);
-  }
-  // Pistola (padrão): ferrolho + massas de mira + guarda-mato + empunhadura inclinada
-  return wrap(`<path d="M6 6h20v3H6z"/><rect x="7" y="4.4" width="2" height="1.6"/><rect x="23.4" y="4.4" width="1.6" height="1.6"/><path d="M6 9h18v1.5H6z"/><path d="M12 10.5a3 3 0 0 0 3 2.9h1v-1.6h-1a1.4 1.4 0 0 1-1.4-1.3z"/><path d="M6 9l-1.6 8h4.3l1.4-8z"/>`);
+  let f = 'pistola';
+  if (e.includes('revolver')) f = 'revolver';
+  else if (e.includes('espingarda')) f = 'espingarda';
+  else if (e.includes('carabina') || e.includes('fuzil')) f = 'carabina';
+  return `<img src="${IMG}${f}.png" alt="${esc(especie || 'Arma')}" class="ico-arma" onerror="this.style.display='none'">`;
 }
 
-// ---- ÍCONES DAS SEÇÕES (linha branca sobre fundo azul) ----
+// ---- ÍCONES DAS SEÇÕES (imagens) ----
 const ICONS = {
-  documentos: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2.5H6.5A2.5 2.5 0 0 0 4 5v14a2.5 2.5 0 0 0 2.5 2.5h11A2.5 2.5 0 0 0 20 19V9.5z"/><path d="M13 2.5V9.5H20"/><path d="M7.5 13.5h7M7.5 17h5"/></svg>`,
-  processos: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4.5" width="14" height="16.5" rx="2.2"/><path d="M9 4.5V3.6A1.4 1.4 0 0 1 10.4 2.2h3.2A1.4 1.4 0 0 1 15 3.6v.9"/><path d="M8.5 12.5l2 2 4-4.3"/></svg>`,
-  validades: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.2"/><path d="M3.5 9.5h17M8 3.2v3.4M16 3.2v3.4"/><path d="M8.8 14.2l2 2 3.8-4"/></svg>`,
-  armas: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5h16.5a1 1 0 0 1 1 1v1.8a1 1 0 0 1-1 1h-5.6l-1.5 4.4a1.4 1.4 0 0 1-1.3.9H8.4a1.2 1.2 0 0 1-1.13-1.6l1-2.7H4a1 1 0 0 1-1-1z"/><path d="M6.5 12.5h5.2"/></svg>`,
-  informacoes: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.2"/><path d="M12 7.8h.01"/></svg>`,
+  documentos:  `<img src="${IMG}documentos.png" alt="" class="ico-img" onerror="this.style.display='none'">`,
+  processos:   `<img src="${IMG}processos.png" alt="" class="ico-img" onerror="this.style.display='none'">`,
+  validades:   `<img src="${IMG}validades.png" alt="" class="ico-img" onerror="this.style.display='none'">`,
+  armas:       `<img src="${IMG}acervo.png" alt="" class="ico-img" onerror="this.style.display='none'">`,
+  informacoes: `<img src="${IMG}informacoes.png" alt="" class="ico-img" onerror="this.style.display='none'">`,
 };
 
-// ---- ÍCONES DOS TIPOS DE ACERVO (coloridos com a cor do acervo) ----
+// ---- ÍCONES DOS TIPOS DE ACERVO (imagens) ----
 const ACERVO_ICONS = {
-  // Estande de tiro (alvo)
-  atirador: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.8"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg>`,
-  // Javali
-  cacador: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7.6 7.4 6 4.1 9.6 5.7z"/><path d="M3.2 12.4c0-3 2.3-5.2 5.2-5.4.5-1 1.5-1.6 2.7-1.6.6 0 1.1.2 1.6.5.6-.2 1.2-.3 1.9-.3 2.7 0 5 1.9 5.5 4.5l1.5.4c.7.2 1 1 .5 1.6l-1 1.2c-.3 2.6-2.5 4.6-5.2 4.6h-1v.7a1 1 0 0 1-1 1h-.6a1 1 0 0 1-1-1v-.7h-2.3v.7a1 1 0 0 1-1 1h-.6a1 1 0 0 1-1-1v-1.1c-2-.9-3.4-2.9-3.4-5.3z"/><circle cx="9" cy="11.4" r="1" fill="#fff"/><path d="M21.4 12.3c.8.2 1.4.6 1.9 1.3-.8.1-1.6 0-2.2-.4z"/></svg>`,
-  // Escudo
-  defesa: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round"><path d="M12 2.6 4.7 5.5v5.7c0 4.6 3.1 8 7.3 9.2 4.2-1.2 7.3-4.6 7.3-9.2V5.5z"/><path d="M8.8 12l2.1 2.1 4-4.4"/></svg>`,
-  // Outros acervos (pistola)
-  outro: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5h16.5a1 1 0 0 1 1 1v1.8a1 1 0 0 1-1 1h-5.6l-1.5 4.4a1.4 1.4 0 0 1-1.3.9H8.4a1.2 1.2 0 0 1-1.13-1.6l1-2.7H4a1 1 0 0 1-1-1z"/><path d="M6.5 12.5h5.2"/></svg>`,
+  atirador: `<img src="${IMG}atirador.png" alt="" class="ico-ac" onerror="this.style.display='none'">`,
+  cacador:  `<img src="${IMG}cacador.png" alt="" class="ico-ac" onerror="this.style.display='none'">`,
+  defesa:   `<img src="${IMG}defesa.png" alt="" class="ico-ac" onerror="this.style.display='none'">`,
+  outro:    `<img src="${IMG}pistola.png" alt="" class="ico-ac" onerror="this.style.display='none'">`,
 };
 
 // ---- NAVEGAÇÃO ENTRE MENU E SEÇÕES ----

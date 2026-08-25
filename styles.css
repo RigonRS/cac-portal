@@ -193,6 +193,9 @@ body {
 .spinner.show { display: inline-block; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ---- FUNDO DA PÁGINA DO PORTAL ---- */
+body.portal-body { background: #528EE3; }
+
 /* ---- PORTAL HEADER ---- */
 .portal-header {
   background: var(--surface);
@@ -294,9 +297,9 @@ body {
 .icon-red    { background: #fee2e2; color: #dc2626; }
 .icon-armas  { background: #6068D6; display: flex; align-items: center; justify-content: center; }
 
-/* Ícone padrão do cabeçalho de seção (branco sobre azul) */
-.sec-icon { background: #528EE3; color: #fff; }
-.section-header .icon svg { width: 19px; height: 19px; display: block; }
+/* Ícone padrão do cabeçalho de seção (imagem) */
+.sec-icon { background: transparent; }
+.section-header .icon .ico-img { width: 30px; height: 30px; object-fit: contain; display: block; }
 
 .section-body { padding: 6px 0; }
 
@@ -441,14 +444,11 @@ body {
 .arma-item:hover { background: #f8fafc; }
 
 .arma-icon {
-  width: 48px; height: 38px;
-  border-radius: 8px;
+  width: 50px; height: 38px;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  background: #528EE3;
-  color: #fff;
 }
-.arma-icon svg { display: block; }
+.arma-icon .ico-arma { max-width: 48px; max-height: 34px; object-fit: contain; display: block; }
 
 .arma-info { flex: 1; min-width: 0; }
 
@@ -521,14 +521,11 @@ body {
 .menu-card-skeleton:hover { transform: none; box-shadow: var(--shadow); border-color: var(--border); }
 
 .menu-card-icon {
-  width: 56px; height: 56px;
-  border-radius: 14px;
+  width: 60px; height: 60px;
   display: flex; align-items: center; justify-content: center;
   margin: 0 auto;
-  background: #528EE3;
-  color: #fff;
 }
-.menu-card-icon svg { width: 30px; height: 30px; display: block; }
+.menu-card-icon .ico-img { width: 56px; height: 56px; object-fit: contain; display: block; }
 
 .menu-card h2 {
   font-size: 16px;
@@ -602,8 +599,16 @@ body {
   background: color-mix(in srgb, var(--acervo-cor) 10%, #fff);
   border-left: 4px solid var(--acervo-cor);
 }
-.acervo-tipo-simbolo { line-height: 1; display: flex; }
-.acervo-tipo-simbolo svg { width: 22px; height: 22px; display: block; }
+.acervo-tipo-simbolo {
+  line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  flex-shrink: 0;
+}
+.acervo-tipo-simbolo .ico-ac { width: 26px; height: 26px; object-fit: contain; display: block; }
 .acervo-tipo-titulo {
   font-size: 13px;
   font-weight: 800;

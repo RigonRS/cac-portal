@@ -1,0 +1,21 @@
+Salve as imagens dos ícones nesta pasta com EXATAMENTE estes nomes (.png):
+
+MENU (ícones 3D):
+  documentos.png   -> pasta amarela com documento
+  processos.png    -> prancheta/checklist
+  validades.png    -> calendário azul
+  acervo.png       -> caixa de munição (balas)
+  informacoes.png  -> círculo azul com "i"
+
+ACERVOS:
+  atirador.png     -> alvo de estande de tiro (silhueta)
+  cacador.png      -> cabeça de javali
+  defesa.png       -> escudo azul
+
+ARMAS (silhuetas):
+  pistola.png      -> pistola
+  revolver.png     -> revólver
+  espingarda.png   -> espingarda (bomba/pump)
+  carabina.png     -> carabina/fuzil (arma longa fina)
+
+Dica: de preferência PNG com fundo transparente.
