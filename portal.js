@@ -105,7 +105,7 @@ const ICONS = {
   validades:   `<img src="${IMG}validades.png?v=137" alt="" class="ico-img" onerror="this.style.display='none'">`,
   armas:       `<img src="${IMG}acervo.png?v=137" alt="" class="ico-img" onerror="this.style.display='none'">`,
   informacoes: `<img src="${IMG}informacoes.png?v=137" alt="" class="ico-img" onerror="this.style.display='none'">`,
-  dados:       `<img src="${IMG}dados.png?v=138" alt="" class="ico-img" onerror="this.style.display='none'">`,
+  dados:       `<img src="${IMG}dados.png?v=140" alt="" class="ico-img" onerror="this.style.display='none'">`,
 };
 
 // ---- ÍCONES DOS TIPOS DE ACERVO (imagens) ----
