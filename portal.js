@@ -105,8 +105,7 @@ const ICONS = {
   validades:   `<img src="${IMG}validades.png?v=137" alt="" class="ico-img" onerror="this.style.display='none'">`,
   armas:       `<img src="${IMG}acervo.png?v=137" alt="" class="ico-img" onerror="this.style.display='none'">`,
   informacoes: `<img src="${IMG}informacoes.png?v=137" alt="" class="ico-img" onerror="this.style.display='none'">`,
-  // Ícone "dados cadastrais" (documento de identificação) — SVG embutido
-  dados: `<svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4.5" width="19" height="15" rx="2.5"/><circle cx="8" cy="10.3" r="2.1"/><path d="M4.9 15.9c.3-1.7 1.7-2.7 3.1-2.7s2.8 1 3.1 2.7"/><path d="M14.5 9.6h4.6M14.5 12.4h4.6M14.5 15.2h3.2"/></svg>`,
+  dados:       `<img src="${IMG}dados.png?v=138" alt="" class="ico-img" onerror="this.style.display='none'">`,
 };
 
 // ---- ÍCONES DOS TIPOS DE ACERVO (imagens) ----
