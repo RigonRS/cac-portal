@@ -105,6 +105,8 @@ const ICONS = {
   validades:   `<img src="${IMG}validades.png?v=137" alt="" class="ico-img" onerror="this.style.display='none'">`,
   armas:       `<img src="${IMG}acervo.png?v=137" alt="" class="ico-img" onerror="this.style.display='none'">`,
   informacoes: `<img src="${IMG}informacoes.png?v=137" alt="" class="ico-img" onerror="this.style.display='none'">`,
+  // Ícone "dados cadastrais" (documento de identificação) — SVG embutido
+  dados: `<svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4.5" width="19" height="15" rx="2.5"/><circle cx="8" cy="10.3" r="2.1"/><path d="M4.9 15.9c.3-1.7 1.7-2.7 3.1-2.7s2.8 1 3.1 2.7"/><path d="M14.5 9.6h4.6M14.5 12.4h4.6M14.5 15.2h3.2"/></svg>`,
 };
 
 // ---- ÍCONES DOS TIPOS DE ACERVO (imagens) ----
@@ -120,6 +122,7 @@ const SECOES = {
   documentos: { titulo: 'Documentos',              icone: ICONS.documentos,  render: renderDocumentos },
   processos:  { titulo: 'Processos',               icone: ICONS.processos,   render: renderProcessos },
   validades:  { titulo: 'Validades de Documentos', icone: ICONS.validades,   render: renderValidades },
+  dados:      { titulo: 'Dados Cadastrais',        icone: ICONS.dados,       render: renderDadosCadastrais },
   armas:      { titulo: 'Acervo de Armas',         icone: ICONS.armas,       render: renderArmas },
   informacoes:{ titulo: 'Informações importantes', icone: ICONS.informacoes, render: renderInformacoes },
 };
@@ -138,6 +141,7 @@ function renderMenu() {
     documentos:  'Documentos disponíveis para baixar',
     processos:   'Acompanhe seus processos em andamento',
     validades:   'Datas de validade dos seus documentos',
+    dados:       'CR, categorias, nível e endereços',
     armas:       'Consulte o seu acervo de armas',
     informacoes: 'Avisos e informações importantes',
   };
@@ -283,6 +287,29 @@ function renderValidades(el) {
       </div>
     </div>
   `).join('');
+}
+
+// ---- DADOS CADASTRAIS ----
+function renderDadosCadastrais(el) {
+  const d = (PORTAL_DADOS || {}).dadosCadastrais || {};
+  const cats = Array.isArray(d.categorias) ? d.categorias : [];
+  const linha = (label, valorHtml) => `<div class="dado-linha"><span class="dado-label">${esc(label)}</span><span class="dado-valor">${valorHtml}</span></div>`;
+
+  const catsHtml = cats.length ? cats.map(c => `<span class="dado-tag">${esc(c)}</span>`).join(' ') : '—';
+
+  let html = `<div class="dado-grupo">`;
+  html += linha('Número do CR', esc(d.numeroCR || '—'));
+  html += linha('Validade do CR', d.validadeCR ? fmtDate(d.validadeCR) : '—');
+  html += linha('Categorias', catsHtml);
+  if (cats.includes('Atirador')) html += linha('Nível de Atirador', esc(d.nivelAtirador || '—'));
+  html += `</div>`;
+
+  html += `<div class="dado-grupo"><div class="dado-subtitulo">Endereços</div>`;
+  html += linha('1º Endereço', esc(d.endereco1 || '—'));
+  html += linha('2º Endereço', esc(d.endereco2 || '—'));
+  html += `</div>`;
+
+  el.innerHTML = html;
 }
 
 // ---- ACERVO DE ARMAS ----

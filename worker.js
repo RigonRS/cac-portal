@@ -378,7 +378,30 @@ async function handleDados(request, env, cors) {
       .filter(c => c && (c.titulo || c.conteudo))
       .map(c => ({ titulo: c.titulo || '', conteudo: c.conteudo || '' }));
 
-    return jsonResp({ validades, processos: processosAtivos, armas: acervoArmas, categorias, informacoes }, 200, cors);
+    // Dados cadastrais do cliente (CR, categorias, nível de atirador, endereços)
+    const montarEndereco = (n) => {
+      const linha = [
+        cliente['Endereco' + n],
+        cliente['Numero' + n] ? 'nº ' + cliente['Numero' + n] : '',
+        cliente['Complemento' + n],
+        cliente['Bairro' + n],
+        cliente['Cidade' + n],
+        cliente['UF' + n + 'Endereco'],
+      ].filter(Boolean).join(', ');
+      const cep = cliente['CEP' + n] ? 'CEP ' + cliente['CEP' + n] : '';
+      const txt = [linha, cep].filter(Boolean).join(' · ');
+      return txt || null;
+    };
+    const dadosCadastrais = {
+      numeroCR:      cliente.NumeroCR || null,
+      validadeCR:    cliente.DataValidadeCR ? cliente.DataValidadeCR.split('T')[0] : null,
+      categorias,
+      nivelAtirador: cliente.NivelAtirador || null,
+      endereco1:     montarEndereco('1'),
+      endereco2:     montarEndereco('2'),
+    };
+
+    return jsonResp({ validades, processos: processosAtivos, armas: acervoArmas, categorias, informacoes, dadosCadastrais }, 200, cors);
   } catch (e) {
     return jsonResp({ error: e.message }, 500, cors);
   }

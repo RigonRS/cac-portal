@@ -301,6 +301,7 @@ body.login-body { background: #528EE3; }
 /* Ícone padrão do cabeçalho de seção (imagem) */
 .sec-icon { background: transparent; }
 .section-header .icon .ico-img { width: 30px; height: 30px; object-fit: contain; display: block; }
+.section-header .icon .ico-svg { width: 26px; height: 26px; color: #2563eb; display: block; }
 
 .section-body { padding: 6px 0; }
 
@@ -527,6 +528,7 @@ body.login-body { background: #528EE3; }
   margin: 0 auto;
 }
 .menu-card-icon .ico-img { width: 56px; height: 56px; object-fit: contain; display: block; }
+.menu-card-icon .ico-svg { width: 50px; height: 50px; color: #2563eb; display: block; }
 
 .menu-card h2 {
   font-size: 16px;
@@ -617,6 +619,16 @@ body.login-body { background: #528EE3; }
   letter-spacing: .04em;
   color: var(--acervo-cor);
 }
+
+/* ---- DADOS CADASTRAIS ---- */
+.dado-grupo { padding: 6px 20px 12px; border-bottom: 1px solid var(--border); }
+.dado-grupo:last-child { border-bottom: none; }
+.dado-subtitulo { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 8px 0 4px; }
+.dado-linha { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+.dado-linha:last-child { border-bottom: none; }
+.dado-label { font-size: 13px; color: var(--muted); flex-shrink: 0; }
+.dado-valor { font-size: 14px; font-weight: 600; text-align: right; }
+.dado-tag { display: inline-block; background: #eff6ff; color: var(--accent); font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; }
 
 /* ---- INFORMAÇÕES IMPORTANTES ---- */
 .info-card {
